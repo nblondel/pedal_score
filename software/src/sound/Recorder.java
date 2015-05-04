@@ -8,24 +8,41 @@ import common.Constants.SampleRate;
 
 import java.io.*;
  
+/* This class is supposed to be used via the RecorderThread class only */
 public class Recorder {
-
-  private static final int BUFFER_SIZE = 4096;
-  private ByteArrayOutputStream recordBytes;
+  /* Singleton */
+  private static Recorder singleton = null;
+  private Recorder() {}  
+  /* Constants */
+  private final int BUFFER_SIZE = 4096;
+  /* Sound */
   private TargetDataLine audioLine;
-  private AudioFormat format;
-  private boolean isRunning;
+  /* Thread */
+  private boolean isRunning = false;
+  private int writingIntervalMs = 2500; // Interval to write .wav file in milliseconds
 
+  public static Recorder getRecorder() {
+    if(singleton == null)
+      singleton = new Recorder();
+    return singleton;
+  }
+  
   /**
    * Defines an audio format used to record
    */
-  AudioFormat getAudioFormat() {
+  private AudioFormat getAudioFormat() {
     float sampleRate = SampleRate.SampleRate_44100.value();
     int sampleSizeInBits = SampleBitsSize.SIZE_16.value();
     int channels = Channel.MONO.value();
     boolean signed = true;
     boolean bigEndian = true;
     return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
+  }
+  
+  public void setWritingInterval(int interval) {
+    if(interval >= 100 && interval < 10000) {
+      this.writingIntervalMs = interval;
+    } else System.err.println("The interval should be between 100 and 10000 milliseconds.");
   }
 
   /**
@@ -34,29 +51,42 @@ public class Recorder {
    * audio format nor open the audio data line.
    */
   public void start() throws LineUnavailableException {
-    format = getAudioFormat();
-    DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+    long currentMillis = 0;
+    ByteArrayOutputStream recordBytes = new ByteArrayOutputStream();
+    byte[] buffer = new byte[BUFFER_SIZE];
+    int bytesRead = 0;
+    AudioFormat format = getAudioFormat();
 
-    // checks if system supports the data line
-    if (!AudioSystem.isLineSupported(info)) {
-      throw new LineUnavailableException(
-          "The system does not support the specified format.");
+    // Checks if system supports the data line
+    DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+    if(!AudioSystem.isLineSupported(info)) {
+      throw new LineUnavailableException("The system does not support the specified format.");
     }
 
     audioLine = AudioSystem.getTargetDataLine(format);
-
     audioLine.open(format);
     audioLine.start();
-
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int bytesRead = 0;
-
-    recordBytes = new ByteArrayOutputStream();
     isRunning = true;
 
-    while (isRunning) {
+    currentMillis = System.currentTimeMillis();
+    while(isRunning) {
       bytesRead = audioLine.read(buffer, 0, buffer.length);
       recordBytes.write(buffer, 0, bytesRead);
+
+      /* Save bytes to WAV file every interval of time */
+      if(System.currentTimeMillis()- currentMillis > this.writingIntervalMs) {
+        currentMillis = System.currentTimeMillis();
+        try {
+          /* Make a copy of the stream to save */
+          ByteArrayOutputStream recordBytesTmp = new ByteArrayOutputStream();
+          recordBytesTmp.writeTo(recordBytes);
+          /* Save this temporary buffer stream */
+          RecordFileWriter.getRecordWriter().save(recordBytesTmp, format);
+          recordBytes.flush();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
     }
   }
 
@@ -67,26 +97,9 @@ public class Recorder {
   public void stop() throws IOException {
     isRunning = false;
 
-    if (audioLine != null) {
+    if(audioLine != null) {
       audioLine.drain();
       audioLine.close();
     }
-  }
-
-  /**
-   * Save recorded sound data into a .wav file format.
-   * @param wavFile The file to be saved.
-   * @throws IOException if any I/O error occurs.
-   */
-  public void save(File wavFile) throws IOException {
-    byte[] audioData = recordBytes.toByteArray();
-    ByteArrayInputStream bais = new ByteArrayInputStream(audioData);
-    AudioInputStream audioInputStream = new AudioInputStream(bais, format,
-        audioData.length / format.getFrameSize());
-
-    AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, wavFile);
-
-    audioInputStream.close();
-    recordBytes.close();
   }
 }

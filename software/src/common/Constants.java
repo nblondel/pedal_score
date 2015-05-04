@@ -5,7 +5,7 @@ import java.io.File;
 public class Constants {
   public static String resourcesDirectory = "res";
   public static String outputDirectory = "output";
-  public static String wav_file = "output.wav";
+  public static String tmpOutputDirectory = outputDirectory + File.separator + "output";
   public static String aubio_path = resourcesDirectory + File.separator + "aubio-0.4.1";
   public static String pitch_executable = "aubiopitch.exe";
 

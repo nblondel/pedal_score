@@ -1,4 +1,4 @@
-package main;
+package graphs;
 
 import org.csstudio.swt.xygraph.dataprovider.CircularBufferDataProvider;
 import org.csstudio.swt.xygraph.figures.ToolbarArmedXYGraph;
@@ -11,12 +11,14 @@ import org.csstudio.swt.xygraph.util.XYGraphMediaFactory;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.swt.widgets.Display;
 
-class XYGraphPitch extends Figure {
-  public Trace trace;
-  public XYGraph xyGraph;
-  public Runnable updater;
-  private final CircularBufferDataProvider traceProvider;
-  private final ToolbarArmedXYGraph toolbarArmedXYGraph;
+public class XYGraphPitch extends Figure {
+  private Trace trace;
+  private XYGraph xyGraph;
+  private Runnable updater;
+  private CircularBufferDataProvider traceProvider;
+  private ToolbarArmedXYGraph toolbarArmedXYGraph;
+  private int pointCounter = 0;
+  private double last_x_value = 0.0f;
   
   public XYGraphPitch() {
     xyGraph = new XYGraph();
@@ -68,10 +70,8 @@ class XYGraphPitch extends Figure {
         xyGraph.primaryXAxis.setRange(new Range(0, amount));
         traceProvider.setBufferSize(amount);
         for(int i = 0; i < amount; i++) {
-
           traceProvider.setCurrentXData(x[i]);
           traceProvider.setCurrentYData(y[i], (long)(x[i] * 1000));
-          //traceProvider.setCurrentYDataTimestamp((long)(x[i] * 1000));
         }
         xyGraph.repaint();
       }
@@ -83,10 +83,14 @@ class XYGraphPitch extends Figure {
   public void addPoints(int amount, double[] x, double[] y) {
     updater = new Runnable(){
       public void run() {
-        xyGraph.primaryXAxis.setRange(new Range(0, amount));
-        traceProvider.setBufferSize(amount);
-        traceProvider.setCurrentXDataArray(x);
-        traceProvider.setCurrentYDataArray(y);
+        pointCounter += amount;
+        xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
+        traceProvider.setBufferSize(pointCounter);
+        for(int i = 0; i < amount; i++) {
+          traceProvider.setCurrentXData(last_x_value + x[i]);
+          traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
+        }
+        last_x_value += x[amount - 1];
         xyGraph.repaint();
       }
     };

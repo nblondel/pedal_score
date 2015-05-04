@@ -1,5 +1,7 @@
 package main;
 
+import graphs.XYGraphPitch;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
@@ -22,16 +24,15 @@ import org.eclipse.swt.widgets.Text;
 
 import common.Constants;
 import common.Utils;
+import sound.PitcherThread;
 import sound.Recorder;
+import sound.RecorderThread;
 
-public class Main {
-//Record duration, in milliseconds
- private static final long RECORD_TIME = 5000;  // 5 seconds
- private static File wavFile = new File(System.getProperty("user.dir") + File.separator + Constants.outputDirectory + File.separator +  Constants.wav_file);
- 
+public class Main { 
  /* Components */
  private static Group actionsGroup;
- private static Button recordButton;
+ private static Button startRecordButton;
+ private static Button stopRecordButton;
  private static Label recordResult;
  private static Button pitchButton;
  private static Label pitchResult;
@@ -50,69 +51,8 @@ public class Main {
  private static XYGraphPitch graphicResultGraph;
  private static LightweightSystem lws;
   
-  private static boolean record() {
-    final Recorder recorder = new Recorder();
-
-    // Create a separate thread for recording
-    Thread recordThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          System.out.println("Start recording.");
-          recorder.start();
-        } catch (LineUnavailableException ex) {
-          ex.printStackTrace();
-        }
-      }
-    });
-
-    recordThread.start();
-
-    try {
-      for(int i = 0; i < (int)(RECORD_TIME/1000); i++) {
-        Thread.sleep(1000);
-        System.out.print(".");
-      }
-      System.out.println();
-    } catch (InterruptedException ex) {
-      ex.printStackTrace();
-    }
-
-    try {
-      System.out.println("Stopping recording...");
-      recorder.stop();
-      System.out.println("Saving file...");
-      recorder.save(wavFile);
-      System.out.println("Stopped.");
-    } catch (IOException ex) {
-      ex.printStackTrace();
-      return false;
-    }
-
-    System.out.println("Done.");
-    return true;
-  }
-  
   private static void pitch(String rawResultFile) {
-    String[] command = new String[]{ "cmd", "/c", Constants.pitch_executable, "-i", wavFile.getAbsolutePath() };
     
-    // Execute the batch file to create extra cfg directory
-    ProcessBuilder process = new ProcessBuilder(command);
-    process.directory(new File(System.getProperty("user.dir"), Constants.aubio_path));
-    process.redirectErrorStream(true);
-    
-    try {
-      Process commandShell = process.start();           
-      Utils.StreamGobbler outputGobbler = new Utils.StreamGobbler(commandShell.getInputStream(), rawResultFile);
-      outputGobbler.start();
-      int shellExitCode = commandShell.waitFor();
-      outputGobbler.join(500);
-      
-      System.out.println("Shell Exit Code: " + shellExitCode);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
   
   private static void addActions(Shell shell, int horizontalSpan) {
@@ -121,26 +61,63 @@ public class Main {
     actionsGroup.setLayout(new GridLayout(2, true));
     actionsGroup.setText("Actions");
     
-    recordButton = new Button(actionsGroup, SWT.PUSH);
-    recordButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-    recordButton.setText("Record");
-    recordButton.addSelectionListener(new SelectionAdapter() {
+    startRecordButton = new Button(actionsGroup, SWT.PUSH);
+    startRecordButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    startRecordButton.setText("Start record");
+    startRecordButton.addSelectionListener(new SelectionAdapter() {
       public void widgetSelected(SelectionEvent e) {
         recordResult.setText("Recording...");
-        recordButton.setEnabled(false);
+        startRecordButton.setEnabled(false);
+        pitchResult.setText("");
+        
+        RecorderThread.startRecorder();
+      }
+    });
+    
+    stopRecordButton = new Button(actionsGroup, SWT.PUSH);
+    stopRecordButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    stopRecordButton.setText("Stop record");
+    stopRecordButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        stopRecordButton.setEnabled(false);
         
         Thread recordThread = new Thread(new Runnable() {
           @Override
           public void run() {
             try {
-              if(record()) {
-                Display.getDefault().syncExec(new Runnable() {
-                  @Override public void run() {
-                    recordButton.setEnabled(true);
-                    recordResult.setText("Record OK.");
-                  }
-                });
-              }
+              RecorderThread.stopRecorder();
+              Display.getDefault().asyncExec(new Runnable() {
+                @Override public void run() {
+                  startRecordButton.setEnabled(true);
+                  stopRecordButton.setEnabled(true);
+                  recordResult.setText("Record OK.");
+                }
+              });
+
+              PitcherThread.startPitcher();
+              
+              Display.getDefault().asyncExec(new Runnable() {
+                @Override public void run() {
+                  pitchResult.setText("Pitch done!");
+                }
+              });
+              resultsFilePath = System.getProperty("user.dir") + File.separator + Constants.outputDirectory + File.separator + "raw.txt";
+
+              rawResultThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                  rawResultThreadFunction();
+                }
+              });
+              rawResultThread.start();
+
+              graphicResultThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                  graphicResultThreadFunction();
+                }
+              });
+              graphicResultThread.start();
             } catch (Exception ex) {
               ex.printStackTrace();
             }
@@ -151,7 +128,7 @@ public class Main {
     });
     
     recordResult = new Label(actionsGroup, SWT.NONE);
-    recordResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+    recordResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
     recordResult.setText("");
     
     pitchButton = new Button(actionsGroup, SWT.PUSH);
@@ -245,7 +222,7 @@ public class Main {
         final int coord_counter = line_counter;
         Display.getDefault().syncExec(new Runnable() {
           @Override public void run() {
-            graphicResultGraph.setPoints(coord_counter, x, y);
+            graphicResultGraph.addPoints(coord_counter, x, y);
           }
         });
       }
@@ -325,7 +302,7 @@ public class Main {
       if(!display.readAndDispatch())
         display.sleep();
     }
-    display.dispose();
+    display.dispose();    
   }
 }
 

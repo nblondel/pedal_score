@@ -15,5 +15,10 @@
 	<classpathentry kind="lib" path="D:/Applications/eclipse-java-luna-SR2-win32-x86_64/eclipse/plugins/org.eclipse.jface_3.10.2.v20141021-1035.jar"/>
 	<classpathentry kind="lib" path="D:/Applications/eclipse-java-luna-SR2-win32-x86_64/eclipse/plugins/org.eclipse.osgi_3.10.2.v20150203-1939.jar"/>
 	<classpathentry kind="lib" path="D:/Applications/eclipse-java-luna-SR2-win32-x86_64/eclipse/plugins/org.eclipse.swt_3.103.2.v20150203-1313.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4/commons-io-2.4.jar" sourcepath="lib/commons-io-2.4/commons-io-2.4-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Sound2Tab/lib/commons-io-2.4/commons-io-2.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
