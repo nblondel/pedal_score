@@ -7,17 +7,18 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.BlockingQueue;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
-import org.apache.commons.io.FileUtils;
-
+import queues.SoundFile;
 import common.Constants;
 
 public class RecordFileWriter {
+  private BlockingQueue<SoundFile> soundFileQueue = null;
   private static RecordFileWriter singleton = null;
   private RecordFileWriter() {}
   
@@ -25,6 +26,10 @@ public class RecordFileWriter {
     if(singleton == null)
       singleton = new RecordFileWriter();
     return singleton;
+  }
+  
+  public void setQueue(BlockingQueue<SoundFile> soundFileQueue) {
+    this.soundFileQueue = soundFileQueue;
   }
   
   /**
@@ -44,21 +49,25 @@ public class RecordFileWriter {
         /* Generate a temporary wav file name */
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String datetime = dateFormat.format(Calendar.getInstance().getTime()) + "_" + Calendar.getInstance().get(Calendar.MILLISECOND);
-        String newWavFile = System.getProperty("user.dir") + File.separator + Constants.tmpOutputDirectory + File.separator + datetime + ".wav";
+        SoundFile newWavFile = new SoundFile(System.getProperty("user.dir") + File.separator + Constants.tmpOutputDirectory + File.separator + datetime + ".wav");
         
         try {
-          System.out.println("Save new file '" + newWavFile + "'");
-          if(!new File(System.getProperty("user.dir") + File.separator + Constants.tmpOutputDirectory).exists())
-            FileUtils.forceMkdir(new File(System.getProperty("user.dir") + File.separator + Constants.tmpOutputDirectory));
-            
-          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(newWavFile));
+          System.out.println("Save new file '" + newWavFile.getFileAbsolutePath() + "'");
+          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(newWavFile.getFileAbsolutePath()));
           audioInputStream.close();
           recordBytes.close();
           
-          // TODO Writer in sound file queue
-        } catch (IOException e) {
+          /* Write the sound in the queue for PitcherThread */
+          if(soundFileQueue != null) {
+            // TODO use a non blocking method an buffer all the file name temporary (see http://tutorials.jenkov.com/java-util-concurrent/blockingqueue.html)
+            soundFileQueue.put(newWavFile);
+          } else {
+            System.err.println("The sound file queue has not been initialized!");
+          }
+          
+        } catch (Exception e) {
           e.printStackTrace();
-          new File(newWavFile).delete();
+          newWavFile.delete();
         }
       }
     };

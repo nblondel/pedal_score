@@ -5,9 +5,13 @@ import java.io.File;
 public class Constants {
   public static String resourcesDirectory = "res";
   public static String outputDirectory = "output";
-  public static String tmpOutputDirectory = outputDirectory + File.separator + "output";
+  public static String tmpOutputDirectory = outputDirectory + File.separator + "tmp";
   public static String aubio_path = resourcesDirectory + File.separator + "aubio-0.4.1";
   public static String pitch_executable = "aubiopitch.exe";
+  
+  public static int soundFilesQueueCapacity = 50;
+  public static int pitchBufferQueueCapacity = 50;
+  
 
   public enum SampleBitsSize {
     SIZE_8(8), SIZE_16(16);

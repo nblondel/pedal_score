@@ -51,40 +51,43 @@ public class Recorder {
    * audio format nor open the audio data line.
    */
   public void start() throws LineUnavailableException {
-    long currentMillis = 0;
-    ByteArrayOutputStream recordBytes = new ByteArrayOutputStream();
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int bytesRead = 0;
-    AudioFormat format = getAudioFormat();
+    if(isRunning == false) {
+      long currentMillis = 0;
+      ByteArrayOutputStream recordBytes = new ByteArrayOutputStream();
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int bytesRead = 0;
+      AudioFormat format = getAudioFormat();      
+      System.out.println("Start recording.");
 
-    // Checks if system supports the data line
-    DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-    if(!AudioSystem.isLineSupported(info)) {
-      throw new LineUnavailableException("The system does not support the specified format.");
-    }
+      // Checks if system supports the data line
+      DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+      if(!AudioSystem.isLineSupported(info)) {
+        throw new LineUnavailableException("The system does not support the specified format.");
+      }
 
-    audioLine = AudioSystem.getTargetDataLine(format);
-    audioLine.open(format);
-    audioLine.start();
-    isRunning = true;
+      audioLine = AudioSystem.getTargetDataLine(format);
+      audioLine.open(format);
+      audioLine.start();
+      isRunning = true;
 
-    currentMillis = System.currentTimeMillis();
-    while(isRunning) {
-      bytesRead = audioLine.read(buffer, 0, buffer.length);
-      recordBytes.write(buffer, 0, bytesRead);
+      currentMillis = System.currentTimeMillis();
+      while(isRunning) {
+        bytesRead = audioLine.read(buffer, 0, buffer.length);
+        recordBytes.write(buffer, 0, bytesRead);
 
-      /* Save bytes to WAV file every interval of time */
-      if(System.currentTimeMillis()- currentMillis > this.writingIntervalMs) {
-        currentMillis = System.currentTimeMillis();
-        try {
-          /* Make a copy of the stream to save */
-          ByteArrayOutputStream recordBytesTmp = new ByteArrayOutputStream();
-          recordBytesTmp.writeTo(recordBytes);
-          /* Save this temporary buffer stream */
-          RecordFileWriter.getRecordWriter().save(recordBytesTmp, format);
-          recordBytes.flush();
-        } catch (IOException e) {
-          e.printStackTrace();
+        /* Save bytes to WAV file every interval of time */
+        if(System.currentTimeMillis()- currentMillis > this.writingIntervalMs) {
+          currentMillis = System.currentTimeMillis();
+          try {
+            /* Make a copy of the stream to save */
+            ByteArrayOutputStream recordBytesTmp = new ByteArrayOutputStream();
+            recordBytes.writeTo(recordBytesTmp);
+            /* Save this temporary buffer stream */
+            RecordFileWriter.getRecordWriter().save(recordBytesTmp, format);
+            recordBytes.flush();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         }
       }
     }
@@ -95,11 +98,16 @@ public class Recorder {
    * @throws IOException if any I/O error occurs.
    */
   public void stop() throws IOException {
-    isRunning = false;
+    if(isRunning == true) {
+      System.out.println("Stopping recording...");
+      isRunning = false;
 
-    if(audioLine != null) {
-      audioLine.drain();
-      audioLine.close();
+      if(audioLine != null) {
+        audioLine.drain();
+        audioLine.close();
+      }
+
+      System.out.println("Recording stopped.");
     }
   }
 }
