@@ -30,7 +30,7 @@ public class Displayer {
   public void start() {
     if(pitchBufferQueue != null && isRunning == false) {
       try {
-        System.out.println("Start pitching.");
+        System.out.println("Start displayer.");
         isRunning = true;
         while(isRunning) {
           /* Blocks until new sound file comes */
@@ -41,7 +41,6 @@ public class Displayer {
             displayWindow.addGraphicPoints(pitchBuffer.size(), pitchBuffer.getFrequencyArray(), pitchBuffer.getTimeArray());
             pitchBuffer.clear();
           }
-          
         }
       } catch (Exception e) {
         e.printStackTrace();

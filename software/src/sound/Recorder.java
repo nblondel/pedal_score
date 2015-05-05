@@ -73,6 +73,7 @@ public class Recorder {
       currentMillis = System.currentTimeMillis();
       while(isRunning) {
         bytesRead = audioLine.read(buffer, 0, buffer.length);
+        System.out.println("Write " + bytesRead + " bytes");
         recordBytes.write(buffer, 0, bytesRead);
 
         /* Save bytes to WAV file every interval of time */
@@ -85,6 +86,7 @@ public class Recorder {
             /* Save this temporary buffer stream */
             RecordFileWriter.getRecordWriter().save(recordBytesTmp, format);
             recordBytes.flush();
+            recordBytes.reset();
           } catch (IOException e) {
             e.printStackTrace();
           }

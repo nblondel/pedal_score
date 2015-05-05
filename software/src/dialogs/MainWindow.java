@@ -1,15 +1,19 @@
 package dialogs;
 
+import java.awt.Component;
+
 import graphs.XYGraphPitch;
 
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -42,18 +46,21 @@ public class MainWindow extends DisplayWindow {
   public MainWindow() {
     display = new Display();
     shell = new Shell(display);
-    shell.setLayout(new GridLayout(7, true));
+    shell.setLayout(new GridLayout(6, true));
     shell.setText("Sound2Tab");
     //shell.setMaximized(true);
 
-    addActions(shell, 1);
-    addRawResults(shell, 1);
-    addGraphicResults(shell, 5);
+    addActions(shell);
+    addGraphicResults(shell);
   }
 
-  private static void addActions(Shell shell, int horizontalSpan) {
-    actionsGroup = new Group(shell, SWT.SHADOW_IN);
-    actionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
+  private static void addActions(Shell shell) {    
+    Composite parentComposite = new Composite(shell, SWT.NONE);
+    parentComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
+    parentComposite.setLayout(new GridLayout(1, true));
+    
+    actionsGroup = new Group(parentComposite, SWT.SHADOW_IN);
+    actionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     actionsGroup.setLayout(new GridLayout(2, true));
     actionsGroup.setText("Actions");
 
@@ -85,14 +92,13 @@ public class MainWindow extends DisplayWindow {
       }
     });
 
-    recordResult = new Label(actionsGroup, SWT.BORDER);
+    recordResult = new Label(actionsGroup, SWT.NONE);
     recordResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
     recordResult.setText("");
-  }
-
-  private static void addRawResults(Shell shell, int horizontalSpan) {
-    rawResultGroup = new Group(shell, SWT.SHADOW_IN);
-    rawResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
+    
+    
+    rawResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
+    rawResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     rawResultGroup.setLayout(new GridLayout(1, true));
     rawResultGroup.setText("Raw results");
 
@@ -114,9 +120,9 @@ public class MainWindow extends DisplayWindow {
     });
   }
 
-  private static void addGraphicResults(Shell shell, int horizontalSpan) {
+  private static void addGraphicResults(Shell shell) {
     graphicResultGroup = new Group(shell, SWT.SHADOW_IN);
-    graphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
+    graphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
     graphicResultGroup.setLayout(new GridLayout(2, true));
     graphicResultGroup.setText("Graphic results");
 
@@ -142,9 +148,19 @@ public class MainWindow extends DisplayWindow {
         graphicResultGraph.addPoints(counter, x, y);
       }
     });
+
+    String rawLines = "";
+    for(int i = 0; i < counter; i++)
+      rawLines = rawLines + x[i] + " " + y[i] + "\n";
+    final String displayRawLines = rawLines;
+    Display.getDefault().syncExec(new Runnable() {
+      @Override public void run() {
+        rawResultText.setText(displayRawLines);
+      }
+    });
   }
 
-  public void live() {
+    public void live() {
     shell.open();
     while(!shell.isDisposed()) {
       if(!display.readAndDispatch())

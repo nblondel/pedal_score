@@ -28,7 +28,7 @@ public class Main {
     DisplayerThread.startDisplayer();
     
     /* Display the main window */
-    mainWindow.live();    
+    mainWindow.live();
     
     /* Stop threads */
     RecorderThread.stopRecorder();
