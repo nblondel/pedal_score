@@ -12,28 +12,28 @@ import sound.RecordFileWriter;
 import sound.RecorderThread;
 
 public class Main { 
-  //        final int coord_counter = line_counter;
-  //        Display.getDefault().syncExec(new Runnable() {
-  //          @Override public void run() {
-  //            graphicResultGraph.addPoints(coord_counter, x, y);
-  //          }
-  //        });
- 
   public static void main(String[] args) {
     MainWindow mainWindow = new MainWindow();
     
-    /* Create the queue manager */
+    /* Create the queues */
     BlockingQueue<SoundFile> soundFileQueue = new ArrayBlockingQueue<>(Constants.soundFilesQueueCapacity);
     BlockingQueue<PitchBuffer> pitchBufferQueue = new ArrayBlockingQueue<>(Constants.pitchBufferQueueCapacity);
+    
+    /* Start threads */
     RecordFileWriter.getRecordWriter().setQueue(soundFileQueue);
-    PitcherThread.getPitcherThread().setQueues(soundFileQueue, pitchBufferQueue);
-    PitcherThread.getPitcherThread().startPitcher();
+    PitcherThread.setQueues(soundFileQueue, pitchBufferQueue);
+    PitcherThread.startPitcher();
+    DisplayerThread.setQueue(pitchBufferQueue);
+    DisplayerThread.setDisplayWindow(mainWindow);
+    DisplayerThread.startDisplayer();
     
     /* Display the main window */
     mainWindow.live();    
     
+    /* Stop threads */
     RecorderThread.stopRecorder();
-    PitcherThread.getPitcherThread().stopPitcher();
+    PitcherThread.stopPitcher();
+    DisplayerThread.stopDisplayer();
   }
 }
 

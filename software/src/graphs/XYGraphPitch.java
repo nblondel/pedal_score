@@ -81,7 +81,7 @@ public class XYGraphPitch extends Figure {
   }
   
   public void addPoints(int amount, double[] x, double[] y) {
-    updater = new Runnable(){
+    updater = new Runnable() {
       public void run() {
         pointCounter += amount;
         xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));

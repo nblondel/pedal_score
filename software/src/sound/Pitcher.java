@@ -15,12 +15,13 @@ public class Pitcher {
   
   /* Thread */
   private boolean isRunning = false;
-  private int loopIntervalMs = 1000; // Timeout in milliseconds
+  private int queueReadTimeoutMs = 1000; // Timeout in milliseconds
   
   /* Queue */
   private BlockingQueue<SoundFile> soundFileQueue = null;
   private BlockingQueue<PitchBuffer> pitchBufferQueue = null;
 
+  private Pitcher() { }
   public static Pitcher getPitcher() {
     if(singleton == null)
       singleton = new Pitcher();
@@ -45,7 +46,7 @@ public class Pitcher {
         isRunning = true;
         while(isRunning) {
           /* Blocks until new sound file comes */
-          SoundFile soundFile = soundFileQueue.poll(loopIntervalMs, TimeUnit.MILLISECONDS);
+          SoundFile soundFile = soundFileQueue.poll(queueReadTimeoutMs, TimeUnit.MILLISECONDS);
           if(soundFile != null) {
             /* This thread need to be non blocking for being stopped. */
             
@@ -86,7 +87,7 @@ public class Pitcher {
       try {
         System.out.println("Stopping pitching...");
         isRunning = false;
-        Thread.sleep(loopIntervalMs);
+        Thread.sleep(queueReadTimeoutMs);
         System.out.println("Pitching stopped.");
       } catch(Exception e) {
         e.printStackTrace();

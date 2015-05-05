@@ -11,12 +11,29 @@ public class PitchBuffer {
     pitches.add(newPitch);
   }
   
-  /**
-   * Get a pitch in the buffer
-   * @return The next Pitch or null if empty
-   */
-  public Pitch getNextPitch() {
-    if(pitches.size() <= 0) return null;
-    return pitches.remove(0);
+  public int size() {
+    return pitches.size();
+  }
+  
+  public double[] getFrequencyArray() {
+    double[] frequencies = new double[pitches.size()];
+    for(int i = 0; i < pitches.size(); i++) {
+      frequencies[i] = pitches.get(i).getFrequency();
+    }
+    
+    return frequencies;
+  }
+  
+  public double[] getTimeArray() {
+    double[] times = new double[pitches.size()];
+    for(int i = 0; i < pitches.size(); i++) {
+      times[i] = pitches.get(i).getTime();
+    }
+    
+    return times;
+  }
+  
+  public void clear() {
+    pitches.clear();
   }
 }

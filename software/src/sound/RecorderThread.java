@@ -41,5 +41,11 @@ public class RecorderThread {
       }
     });
     recordThread.start();
+    
+    try {
+      recordThread.join(2000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 }

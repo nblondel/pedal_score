@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Text;
 
 import sound.RecorderThread;
 
-public class MainWindow {
+public class MainWindow extends DisplayWindow {
   private Shell shell;
   private Display display;
 
@@ -135,6 +135,14 @@ public class MainWindow {
     lws.setContents(graphicResultGraph);
   }
 
+  @Override
+  public void addGraphicPoints(int counter, double[] x, double[] y) {
+    Display.getDefault().syncExec(new Runnable() {
+      @Override public void run() {
+        graphicResultGraph.addPoints(counter, x, y);
+      }
+    });
+  }
 
   public void live() {
     shell.open();
