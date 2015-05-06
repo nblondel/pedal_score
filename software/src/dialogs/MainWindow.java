@@ -1,14 +1,11 @@
 package dialogs;
 
-import java.awt.Component;
-
 import graphs.XYGraphPitch;
 
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -37,11 +34,15 @@ public class MainWindow extends DisplayWindow {
   private static Text rawResultText;
   private static Button rawResultClear;
 
-  private static Group graphicResultGroup;
-  private static Label graphicResultLabel;
-  private static Canvas graphicResultCanvas;
-  private static XYGraphPitch graphicResultGraph;
-  private static LightweightSystem lws;
+  private static Group rawGraphicResultGroup;
+  private static Button rawGraphicResultClearButton;
+  private static Canvas rawGraphicResultCanvas;
+  private static XYGraphPitch rawGraphicResultGraph;
+  private static LightweightSystem rawGraphicLws;
+  private static Group filteredGraphicResultGroup;
+  private static Canvas filteredGraphicResultCanvas;
+  private static XYGraphPitch filteredGraphicResultGraph;
+  private static LightweightSystem filteredGraphicLws;
 
   public MainWindow() {
     display = new Display();
@@ -121,31 +122,53 @@ public class MainWindow extends DisplayWindow {
   }
 
   private static void addGraphicResults(Shell shell) {
-    graphicResultGroup = new Group(shell, SWT.SHADOW_IN);
-    graphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
-    graphicResultGroup.setLayout(new GridLayout(2, true));
-    graphicResultGroup.setText("Graphic results");
-
-    graphicResultLabel = new Label(graphicResultGroup, SWT.NONE);
-    graphicResultLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-    graphicResultLabel.setText("Curve:");
+    Composite parentComposite = new Composite(shell, SWT.NONE);
+    parentComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 2));
+    parentComposite.setLayout(new GridLayout(1, true));
+    
+    rawGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
+    rawGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    rawGraphicResultGroup.setLayout(new GridLayout(7, true));
+    rawGraphicResultGroup.setText("Raw Graphic results");
+    
+    rawGraphicResultClearButton = new Button(rawGraphicResultGroup, SWT.PUSH);
+    rawGraphicResultClearButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    rawGraphicResultClearButton.setText("Clear");
+    rawGraphicResultClearButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        rawGraphicResultGraph.clear();
+      }
+    });
 
     // Create the canvas for drawing on
-    graphicResultCanvas = new Canvas(graphicResultGroup, SWT.NONE);
-    graphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-    graphicResultCanvas.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_GRAY));
+    rawGraphicResultCanvas = new Canvas(rawGraphicResultGroup, SWT.NONE);
+    rawGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 7, 1));
 
     // Create the graph
-    lws = new LightweightSystem(graphicResultCanvas);
-    graphicResultGraph = new XYGraphPitch();
-    lws.setContents(graphicResultGraph);
+    rawGraphicLws = new LightweightSystem(rawGraphicResultCanvas);
+    rawGraphicResultGraph = new XYGraphPitch("Raw graph", "Time", "Amplitude");
+    rawGraphicLws.setContents(rawGraphicResultGraph);
+    
+    filteredGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
+    filteredGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    filteredGraphicResultGroup.setLayout(new GridLayout(2, true));
+    filteredGraphicResultGroup.setText("Filtered Graphic results");
+
+    // Create the canvas for drawing on
+    filteredGraphicResultCanvas = new Canvas(filteredGraphicResultGroup, SWT.NONE);
+    filteredGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+    // Create the graph
+    filteredGraphicLws = new LightweightSystem(filteredGraphicResultCanvas);
+    filteredGraphicResultGraph = new XYGraphPitch("Notes graph", "Time", "Amplitude");
+    filteredGraphicLws.setContents(filteredGraphicResultGraph);
   }
 
   @Override
   public void addGraphicPoints(int counter, double[] x, double[] y) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
-        graphicResultGraph.addPoints(counter, x, y);
+        rawGraphicResultGraph.addPoints(counter, x, y);
       }
     });
 
@@ -155,7 +178,7 @@ public class MainWindow extends DisplayWindow {
     final String displayRawLines = rawLines;
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
-        rawResultText.setText(displayRawLines);
+        rawResultText.append(displayRawLines);
       }
     });
   }

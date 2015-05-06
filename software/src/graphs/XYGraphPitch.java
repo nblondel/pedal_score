@@ -20,19 +20,19 @@ public class XYGraphPitch extends Figure {
   private int pointCounter = 0;
   private double last_x_value = 0.0f;
   
-  public XYGraphPitch() {
+  public XYGraphPitch(String title, String xAxisLegend, String yAxisLegend) {
     xyGraph = new XYGraph();
-    xyGraph.setTitle("XY Graph Test");
+    xyGraph.setTitle(title);
     xyGraph.setFont(XYGraphMediaFactory.getInstance().getFont(XYGraphMediaFactory.FONT_TAHOMA));
     
-    xyGraph.primaryXAxis.setTitle("Time");
+    xyGraph.primaryXAxis.setTitle(xAxisLegend);
     xyGraph.primaryXAxis.setRange(new Range(0, 1000));
     xyGraph.primaryXAxis.setAutoScale(true);
     xyGraph.primaryXAxis.setShowMajorGrid(true);
     xyGraph.primaryXAxis.setShowMinorGrid(true);
     xyGraph.primaryXAxis.setAutoScaleThreshold(0);
     
-    xyGraph.primaryYAxis.setTitle("Amplitude");
+    xyGraph.primaryYAxis.setTitle(yAxisLegend);
     xyGraph.primaryYAxis.setAutoScale(true);
     xyGraph.primaryYAxis.setShowMajorGrid(true);
     xyGraph.primaryYAxis.setShowMinorGrid(true);
@@ -63,8 +63,22 @@ public class XYGraphPitch extends Figure {
     xyGraph.addTrace(trace);
   }
   
+  public void clear() {
+    updater = new Runnable() {
+      public void run() {
+        initTrace();
+        xyGraph.primaryXAxis.setRange(new Range(0, 0));
+        traceProvider.setBufferSize(0);
+        traceProvider.clearTrace();
+        xyGraph.repaint();
+      }
+    };
+
+    Display.getCurrent().timerExec(0, updater);
+  }
+  
   public void setPoints(int amount, double[] x, double[] y) {
-    updater = new Runnable(){
+    updater = new Runnable() {
       public void run() {
         initTrace();
         xyGraph.primaryXAxis.setRange(new Range(0, amount));
@@ -87,8 +101,10 @@ public class XYGraphPitch extends Figure {
         xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
         traceProvider.setBufferSize(pointCounter);
         for(int i = 0; i < amount; i++) {
-          traceProvider.setCurrentXData(last_x_value + x[i]);
-          traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
+          if(y[i] > 0) {
+            traceProvider.setCurrentXData(last_x_value + x[i]);
+            traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
+          }
         }
         last_x_value += x[amount - 1];
         xyGraph.repaint();
