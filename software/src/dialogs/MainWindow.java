@@ -6,6 +6,7 @@ import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -36,6 +37,8 @@ public class MainWindow extends DisplayWindow {
 
   private static Group rawGraphicResultGroup;
   private static Button rawGraphicResultClearButton;
+  private static Text refreshPeriodText;
+  private static Button refreshPeriodButton;
   private static Canvas rawGraphicResultCanvas;
   private static XYGraphPitch rawGraphicResultGraph;
   private static LightweightSystem rawGraphicLws;
@@ -139,6 +142,35 @@ public class MainWindow extends DisplayWindow {
         rawGraphicResultGraph.clear();
       }
     });
+    
+    Label RefreshPeriodLabel = new Label(rawGraphicResultGroup, SWT.NONE);
+    RefreshPeriodLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    RefreshPeriodLabel.setText("Refresh period:");
+    
+    refreshPeriodText = new Text(rawGraphicResultGroup, SWT.BORDER);
+    refreshPeriodText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    refreshPeriodText.setText(((Integer)RecorderThread.getWritingInterval()).toString());
+    
+    refreshPeriodButton = new Button(rawGraphicResultGroup, SWT.PUSH);
+    refreshPeriodButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+    refreshPeriodButton.setText("Apply");
+    refreshPeriodButton.addSelectionListener(new SelectionListener() {
+      @Override
+      public void widgetSelected(SelectionEvent arg0) {
+        try {
+          Integer newPeriod = Integer.parseInt(refreshPeriodText.getText());
+          if(!RecorderThread.setWritingInterval(newPeriod)) {
+            refreshPeriodText.setText(((Integer)RecorderThread.getWritingInterval()).toString());
+          }
+        } catch(NumberFormatException e) {
+          refreshPeriodText.setText(((Integer)RecorderThread.getWritingInterval()).toString());
+        }
+      }
+      
+      @Override
+      public void widgetDefaultSelected(SelectionEvent arg0) { }
+    });
+    
 
     // Create the canvas for drawing on
     rawGraphicResultCanvas = new Canvas(rawGraphicResultGroup, SWT.NONE);

@@ -5,8 +5,12 @@ import java.io.IOException;
 import javax.sound.sampled.LineUnavailableException;
 
 public class RecorderThread {
-  public static void setWritingInterval(int interval) {
-    Recorder.getRecorder().setWritingInterval(interval);
+  public static boolean setWritingInterval(int interval) {
+    return Recorder.getRecorder().setWritingInterval(interval);
+  }
+  
+  public static int getWritingInterval() {
+    return Recorder.getRecorder().getWritingInterval();
   }
   
   public static void startRecorder() {

@@ -68,7 +68,7 @@ public class XYGraphPitch extends Figure {
       public void run() {
         initTrace();
         xyGraph.primaryXAxis.setRange(new Range(0, 0));
-        traceProvider.setBufferSize(0);
+        traceProvider.setBufferSize(1);
         traceProvider.clearTrace();
         xyGraph.repaint();
       }

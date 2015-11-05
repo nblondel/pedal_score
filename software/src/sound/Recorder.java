@@ -2,6 +2,7 @@ package sound;
 
 import javax.sound.sampled.*;
 
+import common.Constants;
 import common.Constants.Channel;
 import common.Constants.SampleBitsSize;
 import common.Constants.SampleRate;
@@ -19,7 +20,7 @@ public class Recorder {
   private TargetDataLine audioLine;
   /* Thread */
   private boolean isRunning = false;
-  private int writingIntervalMs = 2500; // Interval to write .wav file in milliseconds
+  private int writingIntervalMs = Constants.DEFAULT_RECORDER_REFRESH_PERIOD; // Interval to write .wav file in milliseconds
 
   public static Recorder getRecorder() {
     if(singleton == null)
@@ -39,10 +40,18 @@ public class Recorder {
     return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
   }
   
-  public void setWritingInterval(int interval) {
-    if(interval >= 100 && interval < 10000) {
+  public boolean setWritingInterval(int interval) {
+    if(interval >= 10 && interval < 10000) {
       this.writingIntervalMs = interval;
-    } else System.err.println("The interval should be between 100 and 10000 milliseconds.");
+      return true;
+    } else {
+      System.err.println("The interval should be between 10 and 10000 milliseconds.");
+      return false;
+    }
+  }
+  
+  public int getWritingInterval() {
+    return this.writingIntervalMs;
   }
 
   /**
