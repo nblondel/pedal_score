@@ -59,7 +59,7 @@ public class RecordFileWriter {
           
           /* Write the sound in the queue for PitcherThread */
           if(soundFileQueue != null) {
-            // TODO use a non blocking method an buffer all the file name temporary (see http://tutorials.jenkov.com/java-util-concurrent/blockingqueue.html)
+            // TODO use a non blocking method and buffer all the file name temporary (see http://tutorials.jenkov.com/java-util-concurrent/blockingqueue.html)
             soundFileQueue.put(newWavFile);
           } else {
             System.err.println("The sound file queue has not been initialized!");
