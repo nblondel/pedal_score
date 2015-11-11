@@ -3,11 +3,14 @@ package main;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import dialogs.DisplayWindow;
+import queues.NoteBuffer;
 import queues.PitchBuffer;
 
 public class Displayer {
   private static Displayer singleton = null;
   private BlockingQueue<PitchBuffer> pitchBufferQueue;
+  private BlockingQueue<NoteBuffer> noteBufferQueue;
+  
   private DisplayWindow displayWindow;
   private boolean isRunning = false;
   private int queueReadTimeoutMs = 1000; // Timeout in milliseconds
@@ -19,18 +22,19 @@ public class Displayer {
     return singleton;
   }
   
-  public void setQueue(BlockingQueue<PitchBuffer> pitchBufferQueue) {
+  public void setQueues(BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
     this.pitchBufferQueue = pitchBufferQueue;
+    this.noteBufferQueue = noteBufferQueue;
   }
   
   public void setDisplayWindow(DisplayWindow displayWindow) {
     this.displayWindow = displayWindow;
   }
   
-  public void start() {
+  public void startPitchDisplay() {
     if(pitchBufferQueue != null && isRunning == false) {
       try {
-        System.out.println("Start displayer.");
+        System.out.println("Start pitch displayer.");
         isRunning = true;
         while(isRunning) {
           /* Blocks until new sound file comes */
@@ -38,15 +42,24 @@ public class Displayer {
           if(pitchBuffer != null) {
             /* This thread need to be non blocking for being stopped. */
 
-            displayWindow.addGraphicPoints(pitchBuffer.size(), pitchBuffer.getFrequencyArray(), pitchBuffer.getTimeArray());
+            displayWindow.addPitches(pitchBuffer.size(), pitchBuffer.getTimeArray(), pitchBuffer.getFrequencyArray());
             pitchBuffer.clear();
+          }
+          
+          /* Blocks until new sound file comes */
+          NoteBuffer noteBuffer = noteBufferQueue.poll(queueReadTimeoutMs, TimeUnit.MILLISECONDS);
+          if(noteBuffer != null) {
+            /* This thread need to be non blocking for being stopped. */
+
+            displayWindow.addNotes(noteBuffer.size(), noteBuffer.getTimeArray(), noteBuffer.getFrequencyArray());
+            noteBuffer.clear();
           }
         }
       } catch (Exception e) {
         e.printStackTrace();
       }
     } else {
-      System.err.println("The sound file queue has not been initialized!");
+      System.err.println("The pitches queue has not been initialized!");
     }
   }
   

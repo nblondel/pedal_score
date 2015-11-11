@@ -3,12 +3,13 @@ package main;
 import java.util.concurrent.BlockingQueue;
 
 import dialogs.DisplayWindow;
+import queues.NoteBuffer;
 import queues.PitchBuffer;
 
 public class DisplayerThread {
   
-  public static void setQueue(BlockingQueue<PitchBuffer> pitchBufferQueue) {
-    Displayer.getDisplayer().setQueue(pitchBufferQueue);
+  public static void setQueues(BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
+    Displayer.getDisplayer().setQueues(pitchBufferQueue, noteBufferQueue);
   }
   
   public static void setDisplayWindow(DisplayWindow displayWindow) {
@@ -20,10 +21,10 @@ public class DisplayerThread {
     
     Thread displayThread = new Thread() {
       public void run() {
-        displayer.start();
+        displayer.startPitchDisplay();
       }
     };
-    displayThread.start();
+    displayThread.start();    
   }
   
   public static void stopDisplayer() {

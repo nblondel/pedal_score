@@ -11,7 +11,7 @@ import org.csstudio.swt.xygraph.util.XYGraphMediaFactory;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.swt.widgets.Display;
 
-public class XYGraphPitch extends Figure {
+public class XYNoteGraph extends Figure {
   private Trace trace;
   private XYGraph xyGraph;
   private Runnable updater;
@@ -20,7 +20,7 @@ public class XYGraphPitch extends Figure {
   private int pointCounter = 0;
   private double last_x_value = 0.0f;
   
-  public XYGraphPitch(String title, String xAxisLegend, String yAxisLegend) {
+  public XYNoteGraph(String title, String xAxisLegend, String yAxisLegend) {
     xyGraph = new XYGraph();
     xyGraph.setTitle(title);
     xyGraph.setFont(XYGraphMediaFactory.getInstance().getFont(XYGraphMediaFactory.FONT_TAHOMA));
@@ -51,11 +51,11 @@ public class XYGraphPitch extends Figure {
   public void initTrace() {
     if(trace != null)
       xyGraph.removeTrace(trace);
-    trace = new Trace("Pitch record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
+    trace = new Trace("Note record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
     trace.setTraceType(TraceType.SOLID_LINE);
     trace.setLineWidth(1);
     trace.setAreaAlpha(100);
-    trace.setPointStyle(PointStyle.POINT);
+    trace.setPointStyle(PointStyle.CIRCLE);
     trace.setPointSize(4);
     trace.setAntiAliasing(false);
     trace.setErrorBarEnabled(false);

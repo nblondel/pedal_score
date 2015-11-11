@@ -1,13 +1,17 @@
 package sound;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import queues.NoteBuffer;
 import queues.PitchBuffer;
 import queues.SoundFile;
 import common.Constants;
-import common.Utils;
 
 public class Pitcher {
   /* Singleton */
@@ -20,6 +24,7 @@ public class Pitcher {
   /* Queue */
   private BlockingQueue<SoundFile> soundFileQueue = null;
   private BlockingQueue<PitchBuffer> pitchBufferQueue = null;
+  private BlockingQueue<NoteBuffer> noteBufferQueue = null;
 
   private Pitcher() { }
   public static Pitcher getPitcher() {
@@ -32,10 +37,12 @@ public class Pitcher {
    * Set queues to interact with.
    * @param soundFileQueue The queue where to extract the sound file to pitch
    * @param pitchBufferQueue The queue where to insert the pitch buffer computed from sound files.
+   * @param noteBufferQueue The queue where to insert the note buffer filtered from pitches
    */
-  public void setQueues(BlockingQueue<SoundFile> soundFileQueue, BlockingQueue<PitchBuffer> pitchBufferQueue) {
+  public void setQueues(BlockingQueue<SoundFile> soundFileQueue, BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
     this.soundFileQueue = soundFileQueue;
     this.pitchBufferQueue = pitchBufferQueue;
+    this.noteBufferQueue = noteBufferQueue;
   }
   
   public void start() {
@@ -64,7 +71,7 @@ public class Pitcher {
               /* Extract the result to the pitch buffer queue */
               try {
                 Process commandShell = process.start();
-                Utils.StreamGobbler outputGobbler = new Utils.StreamGobbler(commandShell.getInputStream(), pitchBufferQueue);
+                PitchResultThread outputGobbler = new PitchResultThread(commandShell.getInputStream(), pitchBufferQueue, noteBufferQueue);
                 outputGobbler.start();
                 commandShell.waitFor();
                 outputGobbler.join(500);
@@ -97,6 +104,69 @@ public class Pitcher {
         System.out.println("Pitching stopped.");
       } catch(Exception e) {
         e.printStackTrace();
+      }
+    }
+  }
+  
+  private static class PitchResultThread extends Thread {
+    private InputStream is;
+    private BlockingQueue<PitchBuffer> pitchBufferQueue;
+    private BlockingQueue<NoteBuffer> noteBufferQueue;
+
+    public PitchResultThread(InputStream is, BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
+      this.is = is;
+      this.pitchBufferQueue = pitchBufferQueue;
+      this.noteBufferQueue = noteBufferQueue;
+    }
+
+    public void run() {
+      PrintWriter pw = null;
+      try {
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line=null;
+        
+        /* Write the result in the queue */
+        PitchBuffer pitchBuffer = new PitchBuffer();
+        while ( (line = br.readLine()) != null) {
+          String[] words = line.split("\\s+");          
+          if(words.length == 2) {
+            try {
+              double time = Double.parseDouble(words[0]);
+              double frequency = Double.parseDouble(words[1]);
+
+              pitchBuffer.addPitch(frequency, time);
+            } catch(Exception e) {
+              System.err.println("Exception while parsing double in this pitch line: " + line);
+            }
+          } else {
+            System.err.println("Weird pitch result: " + line);
+          }
+        }
+        pitchBufferQueue.add(pitchBuffer);
+        
+        /* Make a copy of the pitch buffer to work with it */
+        PitchBuffer pitchBufferCopy = new PitchBuffer(pitchBuffer);
+        /* FIXME This is a filter try */
+        pitchBufferCopy.compressTime(50);
+        /* FIXME Try to remove noise */
+        // ...
+        /* FIXME Try other things */
+        // ...
+        
+        NoteBuffer noteBuffer = new NoteBuffer();
+        noteBuffer.setNotesFromPitchBuffer(pitchBufferCopy);
+        
+        noteBufferQueue.add(noteBuffer);
+        
+        
+        System.out.println("New buffer of pitches inserted.");
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        if (pw != null) {
+          pw.close();
+        }
       }
     }
   }

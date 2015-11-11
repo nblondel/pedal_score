@@ -1,6 +1,7 @@
 package dialogs;
 
-import graphs.XYGraphPitch;
+import graphs.XYNoteGraph;
+import graphs.XYPitchGraph;
 
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.swt.SWT;
@@ -8,9 +9,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -27,31 +26,32 @@ public class MainWindow extends DisplayWindow {
   private Shell shell;
   private Display display;
 
-  /* Components */
+  /* Menu */
   private static MenuItem startRecordItem;
   private static MenuItem stopRecordItem;
   private static MenuItem settingsRecordItem;
   private static MenuItem openWavFileItem;
+  /* Status bar (bottom) */
   private static Label recordResult;
-
-  private static Label rawResultLabel;
-  private static Text rawResultText;
-  private static Button rawResultClear;
-
-  private static Group rawGraphicResultGroup;
-  private static Button rawGraphicResultClearButton;
+  /* Raw text results */
+  private static Text rawTextResultText;
+  /* Filtered text results */
+  private static Text filteredTextResultText;
+  /* Raw graphic results */
+  private static Group rawResultGroup;
   private static Canvas rawGraphicResultCanvas;
-  private static XYGraphPitch rawGraphicResultGraph;
+  private static XYPitchGraph rawGraphicResultGraph;
   private static LightweightSystem rawGraphicLws;
-  private static Group filteredGraphicResultGroup;
+  /* Filtered */
+  private static Group filteredResultGroup;
   private static Canvas filteredGraphicResultCanvas;
-  private static XYGraphPitch filteredGraphicResultGraph;
+  private static XYNoteGraph filteredGraphicResultGraph;
   private static LightweightSystem filteredGraphicLws;
 
   public MainWindow() {
     display = new Display();
     shell = new Shell(display);
-    shell.setLayout(new GridLayout(6, true));
+    shell.setLayout(new GridLayout());
     shell.setText("Sound2Tab");
     shell.setMaximized(true);
 
@@ -135,86 +135,72 @@ public class MainWindow extends DisplayWindow {
         }
       }
     });
+    
+    // Create the Results item's menu
+    Menu resultsMenu = new Menu(menuBar);
+    MenuItem resultsItem = new MenuItem(menuBar, SWT.CASCADE);
+    resultsItem.setText("Results");
+    resultsItem.setMenu(resultsMenu);
+    MenuItem clearResultsFileItem = new MenuItem(resultsMenu, SWT.NONE);
+    clearResultsFileItem.setText("Clear all");
+    clearResultsFileItem.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        rawGraphicResultGraph.clear();
+        filteredGraphicResultGraph.clear();
+        rawTextResultText.setText("");
+        filteredTextResultText.setText("");
+      }
+    });
   }
 
   private static void addRawResults(Shell shell) {
-    Composite parentComposite = new Composite(shell, SWT.NONE);
-    parentComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    parentComposite.setLayout(new GridLayout(1, true));
+    rawResultGroup = new Group(shell, SWT.SHADOW_IN);
+    rawResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    rawResultGroup.setLayout(new GridLayout(10, true));
+    rawResultGroup.setText("Raw results (pitches)");
 
-    rawResultLabel = new Label(parentComposite, SWT.NONE);
-    rawResultLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-    rawResultLabel.setText("List of the RAW pitch points:");
-
-    rawResultText = new Text(parentComposite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-    rawResultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    rawResultText.setText("");
-
-    rawResultClear = new Button(parentComposite, SWT.PUSH);
-    rawResultClear.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-    rawResultClear.setText("Clear");
-    rawResultClear.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        rawResultText.setText("");
-      }
-    });
-  }
-
-  private static void addGraphicResults(Shell shell) {
-    Composite parentComposite = new Composite(shell, SWT.NONE);
-    parentComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
-    parentComposite.setLayout(new GridLayout(1, true));
-
-    rawGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
-    rawGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    rawGraphicResultGroup.setLayout(new GridLayout(7, true));
-    rawGraphicResultGroup.setText("Raw Graphic results");
-
-    rawGraphicResultClearButton = new Button(rawGraphicResultGroup, SWT.PUSH);
-    rawGraphicResultClearButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-    rawGraphicResultClearButton.setText("Clear");
-    rawGraphicResultClearButton.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        rawGraphicResultGraph.clear();
-      }
-    });
-
+    rawTextResultText = new Text(rawResultGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+    rawTextResultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    rawTextResultText.setText("");
+    
     // Create the canvas for drawing on
-    rawGraphicResultCanvas = new Canvas(rawGraphicResultGroup, SWT.NONE);
-    rawGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 7, 1));
+    rawGraphicResultCanvas = new Canvas(rawResultGroup, SWT.NONE);
+    rawGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 9, 1));
 
     // Create the graph
     rawGraphicLws = new LightweightSystem(rawGraphicResultCanvas);
-    rawGraphicResultGraph = new XYGraphPitch("Raw graph", "Time", "Amplitude");
+    rawGraphicResultGraph = new XYPitchGraph("Raw graph", "Time", "Amplitude");
     rawGraphicLws.setContents(rawGraphicResultGraph);
+  }
 
-    filteredGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
-    filteredGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    filteredGraphicResultGroup.setLayout(new GridLayout(2, true));
-    filteredGraphicResultGroup.setText("Filtered Graphic results");
+  private static void addGraphicResults(Shell shell) {
+    filteredResultGroup = new Group(shell, SWT.SHADOW_IN);
+    filteredResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    filteredResultGroup.setLayout(new GridLayout(10, true));
+    filteredResultGroup.setText("Filtered results (notes)");
+    
+    filteredTextResultText = new Text(filteredResultGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+    filteredTextResultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    filteredTextResultText.setText("");
 
     // Create the canvas for drawing on
-    filteredGraphicResultCanvas = new Canvas(filteredGraphicResultGroup, SWT.NONE);
-    filteredGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+    filteredGraphicResultCanvas = new Canvas(filteredResultGroup, SWT.NONE);
+    filteredGraphicResultCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 9, 1));
 
     // Create the graph
     filteredGraphicLws = new LightweightSystem(filteredGraphicResultCanvas);
-    filteredGraphicResultGraph = new XYGraphPitch("Notes graph", "Time", "Amplitude");
+    filteredGraphicResultGraph = new XYNoteGraph("Filtered graph", "Time", "Amplitude");
     filteredGraphicLws.setContents(filteredGraphicResultGraph);
   }
 
   private static void addStatusBar(Shell shell) {
-    Composite parentComposite = new Composite(shell, SWT.BORDER);
-    parentComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1));
-    parentComposite.setLayout(new GridLayout(1, true));
-
-    recordResult = new Label(parentComposite, SWT.NONE);
-    recordResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    recordResult = new Label(shell, SWT.NONE);
+    recordResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
     recordResult.setText("");
   }
 
   @Override
-  public void addGraphicPoints(int counter, double[] x, double[] y) {
+  public void addPitches(int counter, double[] x, double[] y) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
         rawGraphicResultGraph.addPoints(counter, x, y);
@@ -227,7 +213,26 @@ public class MainWindow extends DisplayWindow {
     final String displayRawLines = rawLines;
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
-        rawResultText.append(displayRawLines);
+        rawTextResultText.append(displayRawLines);
+      }
+    });
+  }
+  
+  @Override
+  public void addNotes(int counter, double[] x, double[] y) {
+    Display.getDefault().syncExec(new Runnable() {
+      @Override public void run() {
+        filteredGraphicResultGraph.addPoints(counter, x, y);
+      }
+    });
+    
+    String rawLines = "";
+    for(int i = 0; i < counter; i++)
+      rawLines = rawLines + x[i] + " " + y[i] + "\n";
+    final String displayRawLines = rawLines;
+    Display.getDefault().syncExec(new Runnable() {
+      @Override public void run() {
+        filteredTextResultText.append(displayRawLines);
       }
     });
   }

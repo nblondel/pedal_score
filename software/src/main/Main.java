@@ -3,6 +3,7 @@ package main;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import queues.NoteBuffer;
 import queues.PitchBuffer;
 import queues.SoundFile;
 import common.Constants;
@@ -18,12 +19,13 @@ public class Main {
     /* Create the queues */
     BlockingQueue<SoundFile> soundFileQueue = new ArrayBlockingQueue<>(Constants.soundFilesQueueCapacity);
     BlockingQueue<PitchBuffer> pitchBufferQueue = new ArrayBlockingQueue<>(Constants.pitchBufferQueueCapacity);
+    BlockingQueue<NoteBuffer> noteBufferQueue = new ArrayBlockingQueue<>(Constants.noteBufferQueueCapacity);
     
     /* Start threads */
     RecordFileWriter.getRecordWriter().setQueue(soundFileQueue);
-    PitcherThread.setQueues(soundFileQueue, pitchBufferQueue);
+    PitcherThread.setQueues(soundFileQueue, pitchBufferQueue, noteBufferQueue);
     PitcherThread.startPitcher();
-    DisplayerThread.setQueue(pitchBufferQueue);
+    DisplayerThread.setQueues(pitchBufferQueue, noteBufferQueue);
     DisplayerThread.setDisplayWindow(mainWindow);
     DisplayerThread.startDisplayer();
     

@@ -1,19 +1,17 @@
 package queues;
 
-public class Pitch {
-  /**
-   * Frequency in Hz
-   */
+public class Note {
   private double frequency;
-  
-  /**
-   * Time in seconds
-   */
   private double time;
   
-  public Pitch(double frequency, double time) {
+  public Note(double frequency, double time) {
     this.frequency = frequency;
     this.time = time;
+  }
+  
+  public Note(Pitch pitch) {
+    this.frequency = pitch.getFrequency(); // TODO find the note (if note is 442 it is set as 440)
+    this.time = pitch.getTime();
   }
   
   public double getFrequency() {

@@ -2,12 +2,13 @@ package sound;
 
 import java.util.concurrent.BlockingQueue;
 
+import queues.NoteBuffer;
 import queues.PitchBuffer;
 import queues.SoundFile;
 
 public class PitcherThread {
-  public static void setQueues(BlockingQueue<SoundFile> soundFileQueue, BlockingQueue<PitchBuffer> pitchBufferQueue) {
-    Pitcher.getPitcher().setQueues(soundFileQueue, pitchBufferQueue);
+  public static void setQueues(BlockingQueue<SoundFile> soundFileQueue, BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
+    Pitcher.getPitcher().setQueues(soundFileQueue, pitchBufferQueue, noteBufferQueue);
   }
 
   public static void startPitcher() {
