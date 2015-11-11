@@ -52,11 +52,10 @@ public class XYNoteGraph extends Figure {
     if(trace != null)
       xyGraph.removeTrace(trace);
     trace = new Trace("Note record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
-    trace.setTraceType(TraceType.DASH_LINE);
-    trace.setLineWidth(1);
-    trace.setAreaAlpha(100);
-    trace.setPointStyle(PointStyle.CIRCLE);
-    trace.setPointSize(5);
+    trace.setTraceType(TraceType.SOLID_LINE);
+    trace.setLineWidth(2);
+    trace.setPointStyle(PointStyle.POINT);
+    trace.setPointSize(4);
     trace.setAntiAliasing(false);
     trace.setErrorBarEnabled(false);
     trace.setTraceColor(XYGraphMediaFactory.getInstance().getColor(XYGraphMediaFactory.COLOR_RED));
@@ -76,24 +75,7 @@ public class XYNoteGraph extends Figure {
     Display.getCurrent().timerExec(0, updater);
   }
   
-  public void setPoints(int amount, double[] x, double[] y) {
-    updater = new Runnable() {
-      public void run() {
-        initTrace();
-        xyGraph.primaryXAxis.setRange(new Range(0, amount));
-        traceProvider.setBufferSize(amount);
-        for(int i = 0; i < amount; i++) {
-          traceProvider.setCurrentXData(x[i]);
-          traceProvider.setCurrentYData(y[i], (long)(x[i] * 1000));
-        }
-        xyGraph.repaint();
-      }
-    };
-
-    Display.getCurrent().timerExec(0, updater);
-  }
-  
-  public void addPoints(int amount, double[] x, double[] y) {
+  public void addNotes(int amount, String[] names, int[] octaves, double[] x, double[] y) {
     updater = new Runnable() {
       public void run() {
         pointCounter += amount;

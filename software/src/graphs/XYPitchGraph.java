@@ -54,9 +54,8 @@ public class XYPitchGraph extends Figure {
     trace = new Trace("Pitch record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
     trace.setTraceType(TraceType.SOLID_LINE);
     trace.setLineWidth(1);
-    trace.setAreaAlpha(100);
     trace.setPointStyle(PointStyle.POINT);
-    trace.setPointSize(4);
+    trace.setPointSize(3);
     trace.setAntiAliasing(false);
     trace.setErrorBarEnabled(false);
     trace.setTraceColor(XYGraphMediaFactory.getInstance().getColor(XYGraphMediaFactory.COLOR_BLUE));

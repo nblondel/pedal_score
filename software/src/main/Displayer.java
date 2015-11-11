@@ -51,7 +51,7 @@ public class Displayer {
           if(noteBuffer != null) {
             /* This thread need to be non blocking for being stopped. */
 
-            displayWindow.addNotes(noteBuffer.size(), noteBuffer.getTimeArray(), noteBuffer.getFrequencyArray());
+            displayWindow.addNotes(noteBuffer.size(), noteBuffer.getNamesArray(), noteBuffer.getOctavesArray(), noteBuffer.getTimeArray(), noteBuffer.getFrequencyArray());
             noteBuffer.clear();
           }
         }

@@ -33,6 +33,24 @@ public class NoteBuffer {
     return times;
   }
   
+  public String[] getNamesArray() {
+    String[] names = new String[notes.size()];
+    for(int i = 0; i < notes.size(); i++) {
+      names[i] = notes.get(i).getName();
+    }
+    
+    return names;
+  }
+
+  public int[] getOctavesArray() {
+    int[] octaves = new int[notes.size()];
+    for(int i = 0; i < notes.size(); i++) {
+      octaves[i] = notes.get(i).getOctave();
+    }
+    
+    return octaves;
+  }
+  
   public void clear() {
     notes.clear();
   }

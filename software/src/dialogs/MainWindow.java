@@ -219,10 +219,10 @@ public class MainWindow extends DisplayWindow {
   }
   
   @Override
-  public void addNotes(int counter, double[] x, double[] y) {
+  public void addNotes(int counter, String[] names, int[] octaves, double[] x, double[] y) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
-        filteredGraphicResultGraph.addPoints(counter, x, y);
+        filteredGraphicResultGraph.addNotes(counter, names, octaves, x, y);
       }
     });
     
