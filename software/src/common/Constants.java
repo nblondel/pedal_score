@@ -4,9 +4,11 @@ import java.io.File;
 
 public class Constants {
   public static String resourcesDirectory = "res";
+  public static String notes_file = resourcesDirectory + File.separator + "notes.csv";
+  public static String aubio_path = resourcesDirectory + File.separator + "aubio-0.4.1";
+  
   public static String outputDirectory = "output";
   public static String tmpOutputDirectory = outputDirectory + File.separator + "tmp";
-  public static String aubio_path = resourcesDirectory + File.separator + "aubio-0.4.1";
   public static String pitch_executable = "aubiopitch.exe";
   
   public static int soundFilesQueueCapacity = 50;

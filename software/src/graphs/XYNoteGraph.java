@@ -38,8 +38,8 @@ public class XYNoteGraph extends Figure {
     xyGraph.primaryYAxis.setShowMinorGrid(true);
 
     traceProvider = new CircularBufferDataProvider(true);
-    traceProvider.setBufferSize(1000);
-    traceProvider.setUpdateDelay(100);
+    traceProvider.setBufferSize(10000);
+    traceProvider.setUpdateDelay(10);
     xyGraph.setFocusTraversable(true);
     xyGraph.setRequestFocusEnabled(true);
     
@@ -52,14 +52,14 @@ public class XYNoteGraph extends Figure {
     if(trace != null)
       xyGraph.removeTrace(trace);
     trace = new Trace("Note record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
-    trace.setTraceType(TraceType.SOLID_LINE);
+    trace.setTraceType(TraceType.DASH_LINE);
     trace.setLineWidth(1);
     trace.setAreaAlpha(100);
     trace.setPointStyle(PointStyle.CIRCLE);
-    trace.setPointSize(4);
+    trace.setPointSize(5);
     trace.setAntiAliasing(false);
     trace.setErrorBarEnabled(false);
-    trace.setTraceColor(XYGraphMediaFactory.getInstance().getColor(XYGraphMediaFactory.COLOR_BLUE));
+    trace.setTraceColor(XYGraphMediaFactory.getInstance().getColor(XYGraphMediaFactory.COLOR_RED));
     xyGraph.addTrace(trace);
   }
   
@@ -68,7 +68,6 @@ public class XYNoteGraph extends Figure {
       public void run() {
         initTrace();
         xyGraph.primaryXAxis.setRange(new Range(0, 0));
-        traceProvider.setBufferSize(1);
         traceProvider.clearTrace();
         xyGraph.repaint();
       }

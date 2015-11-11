@@ -27,7 +27,7 @@ public class NoteBuffer {
   public double[] getTimeArray() {
     double[] times = new double[notes.size()];
     for(int i = 0; i < notes.size(); i++) {
-      times[i] = notes.get(i).getTime();
+      times[i] = notes.get(i).getApparitionTime();
     }
     
     return times;
@@ -42,5 +42,9 @@ public class NoteBuffer {
       Note newNote = new Note(pitch);
       notes.add(newNote);
     }
+  }
+
+  public void computeDurations(int minimumDuration) {
+    // TODO 
   }
 }

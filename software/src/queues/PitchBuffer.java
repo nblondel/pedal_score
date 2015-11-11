@@ -96,6 +96,11 @@ public class PitchBuffer {
     }
   }
 
+  /**
+   * TODO
+   * @param frequencies
+   * @return
+   */
   private int compressFrequencies(List<Double> frequencies) {
     int sum = 0, mean = 0;
     for(Double frequency : frequencies) {

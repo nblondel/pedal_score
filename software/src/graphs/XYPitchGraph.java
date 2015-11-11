@@ -38,8 +38,8 @@ public class XYPitchGraph extends Figure {
     xyGraph.primaryYAxis.setShowMinorGrid(true);
 
     traceProvider = new CircularBufferDataProvider(true);
-    traceProvider.setBufferSize(1000);
-    traceProvider.setUpdateDelay(100);
+    traceProvider.setBufferSize(10000);
+    traceProvider.setUpdateDelay(10);
     xyGraph.setFocusTraversable(true);
     xyGraph.setRequestFocusEnabled(true);
     
@@ -68,7 +68,6 @@ public class XYPitchGraph extends Figure {
       public void run() {
         initTrace();
         xyGraph.primaryXAxis.setRange(new Range(0, 0));
-        traceProvider.setBufferSize(1);
         traceProvider.clearTrace();
         xyGraph.repaint();
       }

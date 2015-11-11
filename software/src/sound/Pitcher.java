@@ -5,9 +5,14 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+
+import queues.Note;
 import queues.NoteBuffer;
 import queues.PitchBuffer;
 import queues.SoundFile;
@@ -25,13 +30,70 @@ public class Pitcher {
   private BlockingQueue<SoundFile> soundFileQueue = null;
   private BlockingQueue<PitchBuffer> pitchBufferQueue = null;
   private BlockingQueue<NoteBuffer> noteBufferQueue = null;
-
-  private Pitcher() { }
+  
+  /* Filter attributes */
+  private List<Note> referenceNotes = new ArrayList<Note>();
+  
   public static Pitcher getPitcher() {
     if(singleton == null)
       singleton = new Pitcher();
     return singleton;
   }
+  
+  
+  private Pitcher() { 
+    isRunning = false;
+    queueReadTimeoutMs = 1000;
+    soundFileQueue = null;
+    pitchBufferQueue = null;
+    noteBufferQueue = null;
+
+    /* Read the existing notes CSV file */
+    List<String> list = new ArrayList<String>();
+
+    try {
+      File readFile = new File(System.getProperty("user.dir"), Constants.notes_file);
+      if(readFile.exists() && readFile.canRead()) {
+        List<String> lines = FileUtils.readLines(readFile);
+        for(int i = 0; i < lines.size(); i++) {
+          String line = lines.get(i);
+          if(line.startsWith("#")) // Skip comments
+            continue;
+
+          list.add(line);
+        }
+      } else {
+        System.err.println("The file " + System.getProperty("user.dir") + File.separator + Constants.notes_file + " cannot be read.");
+      }
+      
+      /* Parse the notes */
+      referenceNotes.clear();
+      
+      for(String line : list) {
+        String[] notes = line.split(";");
+        if(notes.length <= 1) // Skip empty lines
+          continue;
+
+        /* Get name */
+        String noteName = notes[0];
+        for(int i = 1; i < notes.length; i++) {
+          try {
+            /* Get all frequencies for this name */
+            double frequency = Double.parseDouble(notes[i]);
+            
+            //System.out.println("New note: " + noteName + "("+i+") - " + frequency);
+            referenceNotes.add(new Note(noteName, frequency, i));
+          } catch(Exception e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Exception while reading " + System.getProperty("user.dir") + File.separator + Constants.notes_file + ": " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
   
   /**
    * Set queues to interact with.
@@ -126,7 +188,7 @@ public class Pitcher {
         BufferedReader br = new BufferedReader(isr);
         String line=null;
         
-        /* Write the result in the queue */
+        /* Write the pitch result in the pitch queue */
         PitchBuffer pitchBuffer = new PitchBuffer();
         while ( (line = br.readLine()) != null) {
           String[] words = line.split("\\s+");          
@@ -145,17 +207,20 @@ public class Pitcher {
         }
         pitchBufferQueue.add(pitchBuffer);
         
-        /* Make a copy of the pitch buffer to work with it */
+        /* Make a copy of the pitch result buffer to work with it */
         PitchBuffer pitchBufferCopy = new PitchBuffer(pitchBuffer);
-        /* FIXME This is a filter try */
-        pitchBufferCopy.compressTime(50);
+        /* Filter to take only one pitch per X milliseconds */
+        pitchBufferCopy.compressTime(25);
         /* FIXME Try to remove noise */
         // ...
         /* FIXME Try other things */
         // ...
         
+        /* Create notes from pitch (set the real notes frequencies) */
         NoteBuffer noteBuffer = new NoteBuffer();
         noteBuffer.setNotesFromPitchBuffer(pitchBufferCopy);
+        /* Compute the notes durations and remove notes that last less than X milliseconds */
+        noteBuffer.computeDurations(50);
         
         noteBufferQueue.add(noteBuffer);
         
