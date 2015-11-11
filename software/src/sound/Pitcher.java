@@ -49,7 +49,7 @@ public class Pitcher {
     noteBufferQueue = null;
 
     /* Read the existing notes CSV file */
-    List<String> list = new ArrayList<String>();
+    List<String> linesList = new ArrayList<String>();
 
     try {
       File readFile = new File(System.getProperty("user.dir"), Constants.notes_file);
@@ -60,7 +60,7 @@ public class Pitcher {
           if(line.startsWith("#")) // Skip comments
             continue;
 
-          list.add(line);
+          linesList.add(line);
         }
       } else {
         System.err.println("The file " + System.getProperty("user.dir") + File.separator + Constants.notes_file + " cannot be read.");
@@ -69,19 +69,20 @@ public class Pitcher {
       /* Parse the notes */
       referenceNotes.clear();
       
-      for(String line : list) {
-        String[] notes = line.split(";");
-        if(notes.length <= 1) // Skip empty lines
+      String[] names = linesList.get(0).split(",");
+      for(int i = 1; i < linesList.size(); i++) {
+        String[] notes = linesList.get(i).split(",");
+        if(notes.length <= 0) // Skip empty lines
           continue;
 
-        /* Get name */
-        String noteName = notes[0];
-        for(int i = 1; i < notes.length; i++) {
+        for(int j = 0; j < notes.length; j++) {
           try {
-            /* Get all frequencies for this name */
-            double frequency = Double.parseDouble(notes[i]);
+            /* Get name */
+            String noteName = names[j];
+            /* Get the frequency  */
+            double frequency = Double.parseDouble(notes[j]);
             
-            //System.out.println("New note: " + noteName + "("+i+") - " + frequency);
+            //System.out.println("New note: " + noteName + "("+j+") - " + frequency);
             referenceNotes.add(new Note(noteName, frequency, i));
           } catch(Exception e) {
             e.printStackTrace();
@@ -133,10 +134,11 @@ public class Pitcher {
               /* Extract the result to the pitch buffer queue */
               try {
                 Process commandShell = process.start();
-                PitchResultThread outputGobbler = new PitchResultThread(commandShell.getInputStream(), pitchBufferQueue, noteBufferQueue);
-                outputGobbler.start();
+                PitchResultThread resultThread = new PitchResultThread(commandShell.getInputStream(), pitchBufferQueue, noteBufferQueue);
+                resultThread.setReferencesNotes(referenceNotes);
+                resultThread.start();
                 commandShell.waitFor();
-                outputGobbler.join(500);
+                resultThread.join(500);
               } catch (Exception e) {
                 e.printStackTrace();
               }
@@ -174,11 +176,16 @@ public class Pitcher {
     private InputStream is;
     private BlockingQueue<PitchBuffer> pitchBufferQueue;
     private BlockingQueue<NoteBuffer> noteBufferQueue;
+    private List<Note> referenceNotes;
 
     public PitchResultThread(InputStream is, BlockingQueue<PitchBuffer> pitchBufferQueue, BlockingQueue<NoteBuffer> noteBufferQueue) {
       this.is = is;
       this.pitchBufferQueue = pitchBufferQueue;
       this.noteBufferQueue = noteBufferQueue;
+    }
+    
+    public void setReferencesNotes(List<Note> referenceNotes) {
+      this.referenceNotes = referenceNotes;
     }
 
     public void run() {
@@ -218,7 +225,7 @@ public class Pitcher {
         
         /* Create notes from pitch (set the real notes frequencies) */
         NoteBuffer noteBuffer = new NoteBuffer();
-        noteBuffer.setNotesFromPitchBuffer(pitchBufferCopy);
+        noteBuffer.setNotesFromPitchBuffer(pitchBufferCopy, referenceNotes);
         /* Compute the notes durations and remove notes that last less than X milliseconds */
         noteBuffer.computeDurations(50);
         

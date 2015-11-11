@@ -23,11 +23,6 @@ public class Note {
     this.t0 = time;
   }
   
-  public Note(Pitch pitch) {
-    this.frequency = pitch.getFrequency(); // TODO find the note (if note is 442 it is set as 440)
-    this.t0 = pitch.getTime();
-  }
-  
   public double getFrequency() {
     return frequency;
   }
@@ -36,11 +31,11 @@ public class Note {
     this.frequency = frequency;
   }
   
-  public double getApparitionTime() {
+  public double getTime() {
     return t0;
   }
   
-  public void getApparitionTime(double time) {
+  public void setTime(double time) {
     this.t0 = time;
   }
 

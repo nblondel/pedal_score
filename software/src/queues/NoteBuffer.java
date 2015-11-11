@@ -27,7 +27,7 @@ public class NoteBuffer {
   public double[] getTimeArray() {
     double[] times = new double[notes.size()];
     for(int i = 0; i < notes.size(); i++) {
-      times[i] = notes.get(i).getApparitionTime();
+      times[i] = notes.get(i).getTime();
     }
     
     return times;
@@ -37,9 +37,34 @@ public class NoteBuffer {
     notes.clear();
   }
 
-  public void setNotesFromPitchBuffer(PitchBuffer pitchBufferCopy) {
+  public void setNotesFromPitchBuffer(PitchBuffer pitchBufferCopy, List<Note> referenceNotes) {
     for(Pitch pitch : pitchBufferCopy.values()) {
-      Note newNote = new Note(pitch);
+      
+      /* Find the note that looks like the pitch */
+      double freqDifference = pitch.getFrequency(); // Start with a difference to keep resizing to smaller and smaller until we find the smallest
+      
+      // Keep pitch as note to start
+      double currentFrequency = pitch.getFrequency(); 
+      String currentNoteName = "Unknown";
+      int currentNoteOctave = 0;
+      
+      for(int index = 0; index < referenceNotes.size(); index++) {
+        double newFreqDifference = Math.abs(pitch.getFrequency() - referenceNotes.get(index).getFrequency());
+        if(newFreqDifference > freqDifference)
+          break;
+        
+        freqDifference = newFreqDifference;
+        currentFrequency = referenceNotes.get(index).getFrequency();
+        currentNoteName = referenceNotes.get(index).getName();
+        currentNoteOctave = referenceNotes.get(index).getOctave();
+      }
+      
+      /* Create note from the reference notes */
+      //System.out.println("set Pitch " + pitch.getFrequency() + " -> " + currentFrequency);
+      Note newNote = new Note(currentNoteName, currentFrequency, currentNoteOctave);
+      /* Add the pitch attributes */
+      newNote.setTime(pitch.getTime());
+      /* Save this note */
       notes.add(newNote);
     }
   }

@@ -72,7 +72,6 @@ public class PitchBuffer {
     while(!done) {
       for(; index < OldPitches.size(); index++) {
         double pitchTime = OldPitches.get(index).getTime() * 1000; // Seconds to milliseconds
-        System.out.println("Compare " + pitchTime + " with " + (currentTime + time_divisor_ms));
         if(pitchTime >= currentTime + time_divisor_ms) {
           /* We have a sample of time_divisor_ms milliseconds of pitch, compute the frequency for this time */
           if(frequencies.size() > 0) pitches.add(new Pitch(compressFrequencies(frequencies), (double)(currentTime / 1000.0f)));
@@ -80,10 +79,9 @@ public class PitchBuffer {
           frequencies.clear();
           currentTime += time_divisor_ms;
           
-          System.out.println("End of frequency sampling, retry with  " + currentTime);
           break;
         } else {
-          System.out.println("Add frequency " + OldPitches.get(index).getFrequency());
+          // System.out.println("Add frequency " + OldPitches.get(index).getFrequency());
           frequencies.add(OldPitches.get(index).getFrequency());
         }
       }
