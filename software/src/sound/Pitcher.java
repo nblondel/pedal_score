@@ -71,6 +71,12 @@ public class Pitcher {
               } catch (Exception e) {
                 e.printStackTrace();
               }
+              
+              try {
+                soundFile.delete();
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
             }
           }
         }

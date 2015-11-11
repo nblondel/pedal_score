@@ -50,6 +50,14 @@ public class Recorder {
     }
   }
   
+  public boolean checkWritingInterval(int interval) {
+    if(interval >= 10 && interval < 10000) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
   public int getWritingInterval() {
     return this.writingIntervalMs;
   }
@@ -85,7 +93,7 @@ public class Recorder {
         recordBytes.write(buffer, 0, bytesRead);
 
         /* Save bytes to WAV file every interval of time */
-        if(System.currentTimeMillis()- currentMillis > this.writingIntervalMs) {
+        if(System.currentTimeMillis() - currentMillis > this.writingIntervalMs) {
           currentMillis = System.currentTimeMillis();
           try {
             /* Make a copy of the stream to save */

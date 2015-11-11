@@ -14,6 +14,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import org.apache.commons.io.FileUtils;
+
 import queues.SoundFile;
 import common.Constants;
 
@@ -56,6 +58,35 @@ public class RecordFileWriter {
           AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(newWavFile.getFileAbsolutePath()));
           audioInputStream.close();
           recordBytes.close();
+          
+          /* Write the sound in the queue for PitcherThread */
+          if(soundFileQueue != null) {
+            // TODO use a non blocking method and buffer all the file name temporary (see http://tutorials.jenkov.com/java-util-concurrent/blockingqueue.html)
+            soundFileQueue.put(newWavFile);
+          } else {
+            System.err.println("The sound file queue has not been initialized!");
+          }
+          
+        } catch (Exception e) {
+          e.printStackTrace();
+          newWavFile.delete();
+        }
+      }
+    };
+    savingThread.start();
+  }
+
+  public void saveFromExternal(String wavFilePath) {
+    Thread savingThread = new Thread() {
+      public void run() {
+        /* Generate a temporary wav file name */
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String datetime = dateFormat.format(Calendar.getInstance().getTime()) + "_" + Calendar.getInstance().get(Calendar.MILLISECOND);
+        SoundFile newWavFile = new SoundFile(System.getProperty("user.dir") + File.separator + Constants.tmpOutputDirectory + File.separator + datetime + ".wav");
+        
+        try {
+          System.out.println("Save new file '" + newWavFile.getFileAbsolutePath() + "'");
+          FileUtils.copyFile(new File(wavFilePath), new File(newWavFile.getFileAbsolutePath()));
           
           /* Write the sound in the queue for PitcherThread */
           if(soundFileQueue != null) {
