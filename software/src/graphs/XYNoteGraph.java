@@ -53,9 +53,9 @@ public class XYNoteGraph extends Figure {
       xyGraph.removeTrace(trace);
     trace = new Trace("Note record", xyGraph.primaryXAxis, xyGraph.primaryYAxis, traceProvider);
     trace.setTraceType(TraceType.SOLID_LINE);
-    trace.setLineWidth(2);
+    trace.setLineWidth(1);
     trace.setPointStyle(PointStyle.POINT);
-    trace.setPointSize(4);
+    trace.setPointSize(3);
     trace.setAntiAliasing(false);
     trace.setErrorBarEnabled(false);
     trace.setTraceColor(XYGraphMediaFactory.getInstance().getColor(XYGraphMediaFactory.COLOR_RED));
@@ -82,10 +82,10 @@ public class XYNoteGraph extends Figure {
         xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
         traceProvider.setBufferSize(pointCounter);
         for(int i = 0; i < amount; i++) {
-          if(y[i] > 0) {
+          //if(y[i] > 0) {
             traceProvider.setCurrentXData(last_x_value + x[i]);
             traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
-          }
+          //}
         }
         last_x_value += x[amount - 1];
         xyGraph.repaint();

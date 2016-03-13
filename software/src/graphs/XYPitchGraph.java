@@ -99,10 +99,8 @@ public class XYPitchGraph extends Figure {
         xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
         traceProvider.setBufferSize(pointCounter);
         for(int i = 0; i < amount; i++) {
-          if(y[i] > 0) {
-            traceProvider.setCurrentXData(last_x_value + x[i]);
-            traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
-          }
+          traceProvider.setCurrentXData(last_x_value + x[i]);
+          traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
         }
         last_x_value += x[amount - 1];
         xyGraph.repaint();

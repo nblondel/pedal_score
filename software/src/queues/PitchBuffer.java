@@ -18,7 +18,12 @@ public class PitchBuffer {
    * @param clone Copy
    */
   public PitchBuffer(PitchBuffer clone) {
-    pitches = new ArrayList<Pitch>(clone.pitches);
+    pitches = new ArrayList<Pitch>();
+    pitches.clear();
+    for(Pitch p : clone.pitches) {
+      Pitch new_p = new Pitch(p.getFrequency(), p.getTime());
+      pitches.add(new_p);
+    }
   }
 
   public void addPitch(double frequency, double time) {
@@ -54,6 +59,42 @@ public class PitchBuffer {
 
   public void clear() {
     pitches.clear();
+  }
+  
+
+  public void removeFrequenciesBelow(int minFrequency) {
+    List<Pitch> OldPitches = new ArrayList<Pitch>();
+    for(Pitch p : pitches) {
+      OldPitches.add(new Pitch(p.getFrequency(), p.getTime()));
+    }
+    
+    List<Pitch> pitchesToRemove = new ArrayList<Pitch>();
+    
+    for(int i = 0; i < OldPitches.size(); i++) {
+      if(OldPitches.get(i).getFrequency() < minFrequency) pitchesToRemove.add(OldPitches.get(i));
+    }
+    
+    for(Pitch p : pitchesToRemove) {
+      pitches.remove(p);
+    }
+  }
+
+  public void filterNoise(int pitchDepth, int maxFrequencyBetweenTwoPitch) {
+    if(pitches.size() > pitchDepth * 2) {
+
+      for(int i = pitchDepth; i < pitches.size() - pitchDepth; i++) {
+        Pitch p = pitches.get(i);
+        Pitch p_minus = pitches.get(i-pitchDepth);
+
+        if(Math.abs(p.getFrequency() - p_minus.getFrequency()) > maxFrequencyBetweenTwoPitch) {
+          Pitch p_plus = pitches.get(i+pitchDepth);
+
+          if(Math.abs(p.getFrequency() - p_plus.getFrequency()) > maxFrequencyBetweenTwoPitch) {
+            p.setFrequency((Math.abs(p_minus.getFrequency()) + Math.abs(p_plus.getFrequency())) / 2.0f);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -108,4 +149,16 @@ public class PitchBuffer {
 
     return mean;
   }
+
+  public void applyLowPassFilter(int smoothing) {    
+    double frequency = pitches.get(0).getFrequency();
+    for(int i = 1; i < pitches.size(); i++) {
+      double currentFrequency = pitches.get(i).getFrequency();
+      
+      frequency += (currentFrequency - frequency) / smoothing;
+      pitches.get(i).setFrequency(frequency);
+    }
+  }
 }
+
+

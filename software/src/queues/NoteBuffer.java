@@ -86,6 +86,15 @@ public class NoteBuffer {
       notes.add(newNote);
     }
   }
+  
+  public void setRawNotesFromPitchBuffer(PitchBuffer pitchBufferCopy) {
+    for(Pitch pitch : pitchBufferCopy.values()) {      
+      /* Create note from the pitch */
+      Note newNote = new Note(pitch.getFrequency(), pitch.getTime());
+      /* Save this note */
+      notes.add(newNote);
+    }
+  }
 
   public void computeDurations(int minimumDuration) {
     // TODO 
