@@ -12,7 +12,7 @@ public class PitcherThread {
   }
 
   public static void startPitcher() {
-    Pitcher pitcher = Pitcher.getPitcher();
+    final Pitcher pitcher = Pitcher.getPitcher();
     
     Thread pitchThread = new Thread() {
       public void run() {
@@ -23,7 +23,7 @@ public class PitcherThread {
   }
   
   public static void stopPitcher() {
-    Pitcher pitcher = Pitcher.getPitcher();
+    final Pitcher pitcher = Pitcher.getPitcher();
     
     Thread pitchThread = new Thread() {
       public void run() {

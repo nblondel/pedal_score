@@ -75,7 +75,7 @@ public class XYNoteGraph extends Figure {
     Display.getCurrent().timerExec(0, updater);
   }
   
-  public void addNotes(int amount, String[] names, int[] octaves, double[] x, double[] y) {
+  public void addNotes(final int amount, final String[] names, final int[] octaves, final double[] x, final double[] y) {
     updater = new Runnable() {
       public void run() {
         pointCounter += amount;

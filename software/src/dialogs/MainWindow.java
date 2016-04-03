@@ -61,7 +61,7 @@ public class MainWindow extends DisplayWindow {
     addStatusBar(shell);
   }
 
-  private static void addMenu(Shell shell) {
+  private static void addMenu(final Shell shell) {
     // Create the bar menu
     Menu menuBar = new Menu(shell, SWT.BAR);
     shell.setMenuBar(menuBar);
@@ -200,7 +200,7 @@ public class MainWindow extends DisplayWindow {
   }
 
   @Override
-  public void addPitches(int counter, double[] x, double[] y) {
+  public void addPitches(final int counter, final double[] x, final double[] y) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
         rawGraphicResultGraph.addPoints(counter, x, y);
@@ -219,7 +219,7 @@ public class MainWindow extends DisplayWindow {
   }
   
   @Override
-  public void addNotes(int counter, String[] names, int[] octaves, double[] x, double[] y) {
+  public void addNotes(final int counter, final String[] names, final int[] octaves, final double[] x, final double[] y) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
         filteredGraphicResultGraph.addNotes(counter, names, octaves, x, y);

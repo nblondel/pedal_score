@@ -40,7 +40,7 @@ public class RecordFileWriter {
    * @param recordBytes The bytes stream to save.
    * @throws IOException if any I/O error occurs.
    */
-  public void save(ByteArrayOutputStream recordBytes, AudioFormat format) {
+  public void save(final ByteArrayOutputStream recordBytes, final AudioFormat format) {
     Thread savingThread = new Thread() {
       public void run() {
         /* Create audio input stream to write */
@@ -76,7 +76,7 @@ public class RecordFileWriter {
     savingThread.start();
   }
 
-  public void saveFromExternal(String wavFilePath) {
+  public void saveFromExternal(final String wavFilePath) {
     Thread savingThread = new Thread() {
       public void run() {
         /* Generate a temporary wav file name */

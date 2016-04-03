@@ -75,7 +75,7 @@ public class XYPitchGraph extends Figure {
     Display.getCurrent().timerExec(0, updater);
   }
   
-  public void setPoints(int amount, double[] x, double[] y) {
+  public void setPoints(final int amount, final double[] x, final double[] y) {
     updater = new Runnable() {
       public void run() {
         initTrace();
@@ -92,7 +92,7 @@ public class XYPitchGraph extends Figure {
     Display.getCurrent().timerExec(0, updater);
   }
   
-  public void addPoints(int amount, double[] x, double[] y) {
+  public void addPoints(final int amount, final double[] x, final double[] y) {
     updater = new Runnable() {
       public void run() {
         pointCounter += amount;

@@ -18,7 +18,7 @@ public class RecorderThread {
   }
   
   public static void startRecorder() {
-    Recorder recorder = Recorder.getRecorder();
+    final Recorder recorder = Recorder.getRecorder();
 
     // Create a separate thread
     Thread recordThread = new Thread(new Runnable() {
@@ -35,7 +35,7 @@ public class RecorderThread {
   }
   
   public static void stopRecorder() {
-    Recorder recorder = Recorder.getRecorder();
+    final Recorder recorder = Recorder.getRecorder();
 
     // Create a separate thread
     Thread recordThread = new Thread(new Runnable() {

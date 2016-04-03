@@ -17,7 +17,7 @@ public class DisplayerThread {
   }
   
   public static void startDisplayer() {
-    Displayer displayer = Displayer.getDisplayer();
+    final Displayer displayer = Displayer.getDisplayer();
     
     Thread displayThread = new Thread() {
       public void run() {
@@ -28,7 +28,7 @@ public class DisplayerThread {
   }
   
   public static void stopDisplayer() {
-    Displayer displayer = Displayer.getDisplayer();
+    final Displayer displayer = Displayer.getDisplayer();
     
     Thread displayThread = new Thread() {
       public void run() {
