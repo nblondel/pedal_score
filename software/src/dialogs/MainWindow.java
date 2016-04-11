@@ -89,7 +89,7 @@ public class MainWindow extends DisplayWindow {
     });
 
     // Create the Record item's menu
-    Menu recordMenu = new Menu(menuBar);
+    final Menu recordMenu = new Menu(menuBar);
     MenuItem recordItem = new MenuItem(menuBar, SWT.CASCADE);
     recordItem.setText("Recorder");
     recordItem.setMenu(recordMenu);
@@ -102,7 +102,7 @@ public class MainWindow extends DisplayWindow {
         startRecordItem.setEnabled(false);
         openWavFileItem.setEnabled(false);
 
-        RecorderThread.startRecorder();
+        RecorderThread.startRecorder(recordMenu.getShell());
       }
     });
 
@@ -179,10 +179,9 @@ public class MainWindow extends DisplayWindow {
     filteredResultGroup.setLayout(new GridLayout(10, true));
     filteredResultGroup.setText("Filtered results (notes)");
     
-    /*filteredGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
-    filteredGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    filteredGraphicResultGroup.setLayout(new GridLayout(2, true));
-    filteredGraphicResultGroup.setText("Filtered Graphic results");
+    filteredTextResultText = new Text(filteredResultGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+    filteredTextResultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    filteredTextResultText.setText("");
 
     // Create the canvas for drawing on
     filteredGraphicResultCanvas = new Canvas(filteredResultGroup, SWT.NONE);
@@ -190,8 +189,8 @@ public class MainWindow extends DisplayWindow {
 
     // Create the graph
     filteredGraphicLws = new LightweightSystem(filteredGraphicResultCanvas);
-    filteredGraphicResultGraph = new XYGraphPitch("Notes graph", "Time", "Amplitude");
-    filteredGraphicLws.setContents(filteredGraphicResultGraph);*/
+    filteredGraphicResultGraph = new XYNoteGraph("Notes graph", "Time", "Amplitude");
+    filteredGraphicLws.setContents(filteredGraphicResultGraph);
   }
 
   private static void addStatusBar(Shell shell) {
@@ -220,10 +219,10 @@ public class MainWindow extends DisplayWindow {
   }
   
   @Override
-  public void addNotes(final int counter, final String[] names, final int[] octaves, final double[] x, final double[] y) {
+  public void addNotes(final int counter, final String[] names, final int[] octaves, final double[] x, final double[] y, final boolean[] hidden) {
     Display.getDefault().syncExec(new Runnable() {
       @Override public void run() {
-        filteredGraphicResultGraph.addNotes(counter, names, octaves, x, y);
+        filteredGraphicResultGraph.addNotes(counter, names, octaves, x, y, hidden);
       }
     });
     

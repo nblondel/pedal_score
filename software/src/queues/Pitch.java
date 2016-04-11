@@ -11,6 +11,8 @@ public class Pitch {
    */
   private double time;
   
+  private boolean inhibited = false;
+  
   public Pitch(double frequency, double time) {
     this.frequency = frequency;
     this.time = time;
@@ -30,5 +32,13 @@ public class Pitch {
   
   public void setTime(double time) {
     this.time = time;
+  }
+
+  public boolean isInhibited() {
+    return inhibited;
+  }
+  
+  public void setInhibited(boolean inhibited) {
+    this.inhibited = inhibited;
   }
 }

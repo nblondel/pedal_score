@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoteBuffer {
-  List<Note> notes = new ArrayList<Note>();
+  private List<Note> notes = new ArrayList<Note>();
+  private List<Note> referenceNotes = null;
   
+  public NoteBuffer(List<Note> referenceNotes) {
+    this.referenceNotes = referenceNotes;
+  }
+
   public void addNote(double frequency, double time) {
     Note newPitch = new Note(frequency, time);
     notes.add(newPitch);
@@ -64,7 +69,7 @@ public class NoteBuffer {
     notes.clear();
   }
 
-  public void setRealNotes(List<Note> referenceNotes) {
+  public void computeRealNotes() {
     for(Note note : notes) {
       
       /* Find the note that looks like the pitch */
@@ -87,12 +92,9 @@ public class NoteBuffer {
       }
       
       /* Create note from the reference notes */
-      //System.out.println("set Pitch " + pitch.getFrequency() + " -> " + currentFrequency);
-      Note newNote = new Note(currentNoteName, currentFrequency, currentNoteOctave);
-      /* Add the pitch attributes */
-      newNote.setTime(pitch.getTime());
-      /* Save this note */
-      notes.add(newNote);
+      note.setName(currentNoteName);
+      note.setFrequency(currentFrequency);
+      note.setOctave(currentNoteOctave);
     }
   }
   
@@ -121,16 +123,30 @@ public class NoteBuffer {
     int index = 0;
     
     while(index < notes.size()) {
+      if(notes.get(index).isHidden()) {
+        index++;
+        continue;
+      }
+      
       int same_frequency_index = index;
       
       /* Find same note frequencies */
       boolean found = false;
+      int ignored = 0;
       do {
-        if((same_frequency_index + 1) < notes.size() && (notes.get(index).getFrequency() == notes.get(same_frequency_index + 1).getFrequency())) {
-          same_frequency_index++;
-        } else {
+        /* Check for two consecutive notes with the same frequency */
+        if((same_frequency_index + 1) >= notes.size() || notes.get(index).isHidden()) {
           found = true;
+        } else if(notes.get(index).getFrequency() != notes.get(same_frequency_index + 1).getFrequency()) {
+          /* There was not two consecutive, looking for the 'ignored' frequencies (same frequencies with max 10 notes between them) */
+          ignored++;
+          if(ignored >= 10) {
+            same_frequency_index -= 10;
+            found = true;
+          }
         }
+        
+        same_frequency_index++;
       } while(!found);
       
       if(same_frequency_index < notes.size() && same_frequency_index > index) {

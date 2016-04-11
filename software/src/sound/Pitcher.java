@@ -216,24 +216,24 @@ public class Pitcher {
         
         /* Make a copy of the pitch result buffer to work with it */
         PitchBuffer pitchBufferCopy = new PitchBuffer(pitchBuffer);
-        /* Remove the pitches with frequency 0hz */
-        pitchBufferCopy.removeFrequenciesBelow(15);
+        /* Remove the pitches with frequency below X Hz */
+        pitchBufferCopy.removeFrequenciesBelow(20);
         /* Filter to take only one pitch per X milliseconds */
-        pitchBufferCopy.compressTime(20);
-        /* Filter to take only one pitch per X milliseconds */
-        pitchBufferCopy.filterNoise(8, 30);
+        //pitchBufferCopy.compressTime(20);
+        /* Apply a low pass filter */
+        pitchBufferCopy.filterNoise(3, 30);
         /* Remove noise http://phrogz.net/js/framerate-independent-low-pass-filter.html */
-        pitchBufferCopy.applyLowPassFilter(3);
+        pitchBufferCopy.applyLowPassFilter(2);
         
+        NoteBuffer noteBuffer = new NoteBuffer(referenceNotes);
         /* Create notes from pitch (set the real notes frequencies) */
-        NoteBuffer noteBuffer = new NoteBuffer();
-        noteBuffer.setNotesFromPitchBuffer(pitchBufferCopy, referenceNotes);
-        //noteBuffer.setRawNotesFromPitchBuffer(pitchBufferCopy);
+        noteBuffer.setRawNotesFromPitchBuffer(pitchBufferCopy);
         /* Compute the notes durations and remove notes that last less than X milliseconds */
-        noteBuffer.computeDurations(50);
+        noteBuffer.hideSmallDurations(50);
+        noteBuffer.hideSmallDurations(40);
+        noteBuffer.computeRealNotes();
         
         noteBufferQueue.add(noteBuffer);
-        
         
         System.out.println("New buffer of pitches inserted.");
       } catch (Exception e) {

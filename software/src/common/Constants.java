@@ -14,7 +14,7 @@ public class Constants {
   public static int soundFilesQueueCapacity = 50;
   public static int pitchBufferQueueCapacity = 50;
   public static int noteBufferQueueCapacity = 50;
-  public static int DEFAULT_RECORDER_REFRESH_PERIOD = 1000; // ms
+  public static int DEFAULT_RECORDER_REFRESH_PERIOD = 2000; // ms
   
 
   public enum SampleBitsSize {

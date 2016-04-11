@@ -61,21 +61,13 @@ public class PitchBuffer {
     pitches.clear();
   }
   
-
+  /**
+   * Inhibit the lowest frequencies
+   * @param minFrequency The minimum frequency
+   */
   public void removeFrequenciesBelow(int minFrequency) {
-    List<Pitch> OldPitches = new ArrayList<Pitch>();
-    for(Pitch p : pitches) {
-      OldPitches.add(new Pitch(p.getFrequency(), p.getTime()));
-    }
-    
-    List<Pitch> pitchesToRemove = new ArrayList<Pitch>();
-    
-    for(int i = 0; i < OldPitches.size(); i++) {
-      if(OldPitches.get(i).getFrequency() < minFrequency) pitchesToRemove.add(OldPitches.get(i));
-    }
-    
-    for(Pitch p : pitchesToRemove) {
-      pitches.remove(p);
+    for(Pitch pitch : pitches) {
+      if(pitch.getFrequency() < minFrequency) pitch.setInhibited(true);
     }
   }
 
