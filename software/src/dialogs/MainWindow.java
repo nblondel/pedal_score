@@ -179,9 +179,10 @@ public class MainWindow extends DisplayWindow {
     filteredResultGroup.setLayout(new GridLayout(10, true));
     filteredResultGroup.setText("Filtered results (notes)");
     
-    filteredTextResultText = new Text(filteredResultGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-    filteredTextResultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    filteredTextResultText.setText("");
+    /*filteredGraphicResultGroup = new Group(parentComposite, SWT.SHADOW_IN);
+    filteredGraphicResultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    filteredGraphicResultGroup.setLayout(new GridLayout(2, true));
+    filteredGraphicResultGroup.setText("Filtered Graphic results");
 
     // Create the canvas for drawing on
     filteredGraphicResultCanvas = new Canvas(filteredResultGroup, SWT.NONE);
@@ -189,8 +190,8 @@ public class MainWindow extends DisplayWindow {
 
     // Create the graph
     filteredGraphicLws = new LightweightSystem(filteredGraphicResultCanvas);
-    filteredGraphicResultGraph = new XYNoteGraph("Filtered graph", "Time", "Amplitude");
-    filteredGraphicLws.setContents(filteredGraphicResultGraph);
+    filteredGraphicResultGraph = new XYGraphPitch("Notes graph", "Time", "Amplitude");
+    filteredGraphicLws.setContents(filteredGraphicResultGraph);*/
   }
 
   private static void addStatusBar(Shell shell) {

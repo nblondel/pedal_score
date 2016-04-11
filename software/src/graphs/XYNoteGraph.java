@@ -75,17 +75,19 @@ public class XYNoteGraph extends Figure {
     Display.getCurrent().timerExec(0, updater);
   }
   
-  public void addNotes(final int amount, final String[] names, final int[] octaves, final double[] x, final double[] y) {
+  public void addNotes(final int amount, final String[] names, final int[] octaves, final double[] x, final double[] y, final boolean[] hidden) {
     updater = new Runnable() {
       public void run() {
         pointCounter += amount;
         xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
         traceProvider.setBufferSize(pointCounter);
         for(int i = 0; i < amount; i++) {
-          //if(y[i] > 0) {
-            traceProvider.setCurrentXData(last_x_value + x[i]);
+          traceProvider.setCurrentXData(last_x_value + x[i]);
+          if(!hidden[i]) {
             traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
-          //}
+          } else {
+            traceProvider.setCurrentYData(0, (long)((last_x_value + x[i]) * 1000));
+          }
         }
         last_x_value += x[amount - 1];
         xyGraph.repaint();

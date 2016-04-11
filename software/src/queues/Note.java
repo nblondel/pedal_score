@@ -11,6 +11,8 @@ public class Note {
   private int octave = 1;
   // [CDEFGAB]
   private String name = "";
+  // True / False
+  private boolean hidden = false;
   
   public Note(String name, double frequency, int octave) {
     this.name = name;
@@ -61,5 +63,13 @@ public class Note {
 
   public void setName(String name) {
     this.name = name;
+  }
+  
+  public boolean isHidden() {
+    return hidden;
+  }
+  
+  public void setHidden(boolean hidden) {
+    this.hidden = hidden;
   }
 }
