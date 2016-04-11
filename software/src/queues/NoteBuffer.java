@@ -135,18 +135,19 @@ public class NoteBuffer {
       int ignored = 0;
       do {
         /* Check for two consecutive notes with the same frequency */
-        if((same_frequency_index + 1) >= notes.size() || notes.get(index).isHidden()) {
+        if((same_frequency_index + 1) >= notes.size()) {
           found = true;
-        } else if(notes.get(index).getFrequency() != notes.get(same_frequency_index + 1).getFrequency()) {
+        } else if(notes.get(index).getFrequency() != notes.get(same_frequency_index + 1).getFrequency() || notes.get(index).isHidden()) {
+          found = true;
+          
           /* There was not two consecutive, looking for the 'ignored' frequencies (same frequencies with max 10 notes between them) */
-          ignored++;
-          if(ignored >= 10) {
-            same_frequency_index -= 10;
-            found = true;
-          }
+//          ignored++;
+//          if(ignored >= 10) {
+//            found = true;
+//          }
+        } else {
+          same_frequency_index++;
         }
-        
-        same_frequency_index++;
       } while(!found);
       
       if(same_frequency_index < notes.size() && same_frequency_index > index) {
