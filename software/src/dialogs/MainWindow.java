@@ -89,7 +89,7 @@ public class MainWindow extends DisplayWindow {
     });
 
     // Create the Record item's menu
-    final Menu recordMenu = new Menu(menuBar);
+    Menu recordMenu = new Menu(menuBar);
     MenuItem recordItem = new MenuItem(menuBar, SWT.CASCADE);
     recordItem.setText("Recorder");
     recordItem.setMenu(recordMenu);
@@ -102,7 +102,7 @@ public class MainWindow extends DisplayWindow {
         startRecordItem.setEnabled(false);
         openWavFileItem.setEnabled(false);
 
-        RecorderThread.startRecorder(recordMenu.getShell());
+        RecorderThread.startRecorder(shell);
       }
     });
 

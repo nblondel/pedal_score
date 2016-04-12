@@ -15,7 +15,7 @@ public class Recorder {
   private static Recorder singleton = null;
   private Recorder() {}  
   /* Constants */
-  private final int BUFFER_SIZE = 4096;
+  private final int BUFFER_SIZE = 2048;
   /* Sound */
   private TargetDataLine audioLine;
   /* Thread */

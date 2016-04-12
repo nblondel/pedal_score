@@ -5,7 +5,8 @@ import java.io.File;
 public class Constants {
   public static String resourcesDirectory = "res";
   public static String notes_file = resourcesDirectory + File.separator + "notes.csv";
-  public static String aubio_path = resourcesDirectory + File.separator + "aubio-0.4.1";
+  public static String aubio_path_32 = resourcesDirectory + File.separator + "aubio-0.4.2" + File.separator + "32";
+  public static String aubio_path_64 = resourcesDirectory + File.separator + "aubio-0.4.2" + File.separator + "64";
   
   public static String outputDirectory = "output";
   public static String tmpOutputDirectory = outputDirectory + File.separator + "tmp";

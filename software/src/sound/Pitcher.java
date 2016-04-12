@@ -124,11 +124,17 @@ public class Pitcher {
               System.out.println("Extracted file from queue '"+ soundFile.getFileAbsolutePath() +"'");
 
               /* Extract the pitch from the sound file */
-              String[] command = new String[]{ "cmd", "/c", Constants.pitch_executable, "-i", soundFile.getFileAbsolutePath() };
+              String windowsArch = System.getProperty("os.arch");
+              // TODO check parameters http://aubio.org/manpages/latest/aubiopitch.1.html
+              String[] command = new String[]{ "cmd", "/c", Constants.pitch_executable, "-i", soundFile.getFileAbsolutePath(), /*"-l", "0.2", "-p", "fcomb"*/ };
 
               // Execute the exe file to create pitch raw points
               ProcessBuilder process = new ProcessBuilder(command);
-              process.directory(new File(System.getProperty("user.dir"), Constants.aubio_path));
+              if(windowsArch.contains("x86")) {
+                process.directory(new File(System.getProperty("user.dir"), Constants.aubio_path_32));
+              } else {
+                process.directory(new File(System.getProperty("user.dir"), Constants.aubio_path_64));
+              }
               //process.redirectErrorStream(true);
 
               /* Extract the result to the pitch buffer queue */
@@ -197,7 +203,7 @@ public class Pitcher {
         
         /* Write the pitch result in the pitch queue */
         PitchBuffer pitchBuffer = new PitchBuffer();
-        while ( (line = br.readLine()) != null) {
+        while((line = br.readLine()) != null) {
           String[] words = line.split("\\s+");          
           if(words.length == 2) {
             try {
@@ -216,22 +222,23 @@ public class Pitcher {
         
         /* Make a copy of the pitch result buffer to work with it */
         PitchBuffer pitchBufferCopy = new PitchBuffer(pitchBuffer);
-        /* Remove the pitches with frequency below X Hz */
-        pitchBufferCopy.removeFrequenciesBelow(20);
         /* Filter to take only one pitch per X milliseconds */
         //pitchBufferCopy.compressTime(20);
         /* Apply a low pass filter */
-        pitchBufferCopy.filterNoise(3, 30);
+        //pitchBufferCopy.filterNoise(3, 30);
         /* Remove noise http://phrogz.net/js/framerate-independent-low-pass-filter.html */
-        pitchBufferCopy.applyLowPassFilter(2);
+        //pitchBufferCopy.applyLowPassFilter(2);
+        /* Remove the pitches with frequency below X Hz */
+        pitchBufferCopy.removeFrequenciesBelow(20);
         
         NoteBuffer noteBuffer = new NoteBuffer(referenceNotes);
         /* Create notes from pitch (set the real notes frequencies) */
         noteBuffer.setRawNotesFromPitchBuffer(pitchBufferCopy);
         /* Compute the notes durations and remove notes that last less than X milliseconds */
-        noteBuffer.hideSmallDurations(50);
-        noteBuffer.hideSmallDurations(40);
+        noteBuffer.hideSmallDurations(50, 8);
+        /* Set the real musical frequencies on notes (find the nearest frequency for each) */
         noteBuffer.computeRealNotes();
+        noteBuffer.hideSmallDurations(50, 8);
         
         noteBufferQueue.add(noteBuffer);
         

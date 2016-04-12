@@ -95,15 +95,17 @@ public class XYPitchGraph extends Figure {
   public void addPoints(final int amount, final double[] x, final double[] y) {
     updater = new Runnable() {
       public void run() {
-        pointCounter += amount;
-        xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
-        traceProvider.setBufferSize(pointCounter);
-        for(int i = 0; i < amount; i++) {
-          traceProvider.setCurrentXData(last_x_value + x[i]);
-          traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
+        if(amount > 0) {
+          pointCounter += amount;
+          xyGraph.primaryXAxis.setRange(new Range(0, pointCounter));
+          traceProvider.setBufferSize(pointCounter);
+          for(int i = 0; i < amount; i++) {
+            traceProvider.setCurrentXData(last_x_value + x[i]);
+            traceProvider.setCurrentYData(y[i], (long)((last_x_value + x[i]) * 1000));
+          }
+          last_x_value += x[amount - 1];
+          xyGraph.repaint();
         }
-        last_x_value += x[amount - 1];
-        xyGraph.repaint();
       }
     };
 

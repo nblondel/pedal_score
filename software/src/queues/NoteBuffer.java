@@ -105,7 +105,7 @@ public class NoteBuffer {
   public void setRawNotesFromPitchBuffer(PitchBuffer pitchBufferCopy) {
     for(Pitch pitch : pitchBufferCopy.values()) {      
       /* Create note from the pitch */
-      double frequency = ((double)((int)pitch.getFrequency()));
+      double frequency = (double)Math.round(pitch.getFrequency());
       if(pitch.isInhibited()) {
         frequency = 0.0;
       }
@@ -117,57 +117,112 @@ public class NoteBuffer {
 
   /**
    * Set the attribute 'Hidden' of the Note true if the duration of the note (a set of pitches) duration is smaller than the minimum duration
-   * @param minimumDuration The minimum duration (milliseconds)
+   * @param minimum_duration The minimum duration (milliseconds)
    */
-  public void hideSmallDurations(double minimumDuration) {
+  public void hideSmallDurations(double minimum_duration, int ignored_allowed) {    
     int index = 0;
+//    System.out.println("Notes:");
+//    /* Create notes from pitch (set the real notes frequencies) */
+//    for(index = 0; index < notes.size(); index++) {
+//      notes.get(index).setFrequency((double)Math.round(notes.get(index).getFrequency()));
+//      System.out.println("Note " + index + ": " + notes.get(index).getFrequency());
+//    }
+//    System.out.println();
     
+    /* Remove small durations */
+    index = 0;
     while(index < notes.size()) {
-      if(notes.get(index).isHidden()) {
-        index++;
-        continue;
-      }
-      
       int same_frequency_index = index;
       
       /* Find same note frequencies */
-      boolean found = false;
-      int ignored = 0;
+      boolean search_same_notes_loop = true; /* Main loop condition*/
+      int ignored_amount = 0; /* The total of notes ignored, cannot be superior to 10 */
+      boolean init_ignored_notes = false; /* Initialize the ignored notes when at least 5 sames notes are following each other */
+      boolean notes_ignored_confirmed = false; /* Notes cannot be ignored more than once */
+      boolean at_least_two_consecutives = false; /* At least 2 consecutive same frequency for time comparison */
+      int consecutive_notes_counter = 1; /* Consecutive notes counter */
+      int first_ignored_note_index = 0; /* The index of the first ignored note */
+      double last_correct_frequency = 0.0; /* Frequency of the last non-ignored note */
+      
       do {
         /* Check for two consecutive notes with the same frequency */
         if((same_frequency_index + 1) >= notes.size()) {
-          found = true;
-        } else if(notes.get(index).getFrequency() != notes.get(same_frequency_index + 1).getFrequency() || notes.get(index).isHidden()) {
-          found = true;
-          
-          /* There was not two consecutive, looking for the 'ignored' frequencies (same frequencies with max 10 notes between them) */
-//          ignored++;
-//          if(ignored >= 10) {
-//            found = true;
-//          }
+          /* End of the notes buffer */
+          search_same_notes_loop = false;
         } else {
+          if(!notes.get(index).equals(notes.get(same_frequency_index + 1))) {
+            /* Different notes: accept up to 10 differences */
+            if(notes_ignored_confirmed) {
+              /* Notes are already been ignored, stop the research */
+              search_same_notes_loop = false;
+            } else {
+              /* First ignored notes, reset the consecutive notes counter */
+              consecutive_notes_counter = 1;
+              if(init_ignored_notes) {
+                /* If the notes ignoring is enabled, start to ignore notes that are not equals to the previous ones */
+                first_ignored_note_index = same_frequency_index + 1;
+                ignored_amount++;
+                if(ignored_amount > ignored_allowed) {
+                  /* Too many ignored, stop the process */
+                  search_same_notes_loop = false;
+                }
+              } else {
+                /* Ignore process not allowed, stop the process */
+                search_same_notes_loop = false;
+              }
+            }
+          } else {
+            /* Two same consecutive notes, allow to compare their time */
+            at_least_two_consecutives = true;
+            last_correct_frequency = notes.get(same_frequency_index + 1).getFrequency();
+            
+            consecutive_notes_counter++;
+            if(!init_ignored_notes && consecutive_notes_counter >= 5) {
+              /* First same 5 notes, init ignored notes */
+              init_ignored_notes = true;
+            }
+            
+            if(ignored_amount > 0) {
+              /* Some notes have already been ignored and some consecutive notes are also found after the ignored one: disable to allow ignored notes again */
+              notes_ignored_confirmed = true;
+            }
+            // System.out.println(index + " is the same as " + (same_frequency_index + 1));
+          }
+          
           same_frequency_index++;
         }
-      } while(!found);
+      } while(search_same_notes_loop);
       
-      if(same_frequency_index < notes.size() && same_frequency_index > index) {
-        // System.out.println("Same notes from " + index + " to " + same_frequency_index);
+      if(ignored_amount > 0) {
+        /* Some notes have been ignored */
+        if(notes_ignored_confirmed == false) {
+          /* Do not take the ignored in account */
+          same_frequency_index -= ignored_amount;
+        } else {
+          for(int ignored_index = first_ignored_note_index; ignored_index < (first_ignored_note_index + ignored_amount); ignored_index++) {
+            notes.get(ignored_index).setFrequency(last_correct_frequency);
+          }
+        }
+      }
+      
+      if(at_least_two_consecutives && same_frequency_index < notes.size()) {
+        // System.out.println("Keep notes from " + index + " to " + same_frequency_index);
         
         /* Compute the duration of this same frequency */
-        double duration_milliseconds = (notes.get(same_frequency_index).getTime() * 1000.0) - (notes.get(index).getTime() * 1000.0);
+        double duration_milliseconds = (notes.get(same_frequency_index).getTime() * 1000.0 - notes.get(index).getTime() * 1000.0);
         // System.out.println("Duration: " + duration_milliseconds);
-        if(duration_milliseconds <= minimumDuration) {
+        if(duration_milliseconds <= minimum_duration) {
           for(int notes_index = index; notes_index < same_frequency_index; notes_index++) {
             /* Duration too small, hide all these notes */
-            //System.out.println("note " + notes_index + " hidden for small duration ("+notes.get(notes_index).getTime()+"/"+notes.get(notes_index).getFrequency()+")");
+            // System.out.println("note " + notes_index + " hidden for small duration ("+notes.get(notes_index).getFrequency()+")");
             notes.get(notes_index).setHidden(true);
           }
         }
-        index = same_frequency_index;
+        index = same_frequency_index + 1;
       } else {
         /* There is not even 2 notes with the same frequency */
+        // System.out.println("note " + index + " hidden not similar to its neighbour ("+notes.get(index).getFrequency()+")");
         notes.get(index).setHidden(true);
-        //System.out.println("note " + index + " hidden not similar to its neighbour ("+notes.get(index).getTime()+"/"+notes.get(index).getFrequency()+")");
         index++;
       }
     }

@@ -72,4 +72,10 @@ public class Note {
   public void setHidden(boolean hidden) {
     this.hidden = hidden;
   }
+  
+  public boolean equals(Note note) {
+    if(this.hidden || this.frequency == 0.0 || note.isHidden() || note.getFrequency() == 0.0) return false;
+    if(Math.abs(Math.max(this.frequency, note.getFrequency())) - Math.abs(Math.min(this.frequency, note.getFrequency())) <= 1.0) return true;
+    return false;
+  }
 }

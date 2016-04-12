@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import javax.sound.sampled.LineUnavailableException;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 public class RecorderThread {
@@ -33,10 +31,6 @@ public class RecorderThread {
         } catch (LineUnavailableException ex) {
           ex.printStackTrace();
           stopRecorder();
-          
-          MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-          messageBox.setMessage("Unable to start the recorder: " + ex.getMessage());
-          messageBox.open();
         }
       }
     });
